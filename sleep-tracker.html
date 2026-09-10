@@ -281,6 +281,33 @@ body {
   font-weight: 700;
 }
 
+/* ── Шпаргалка по оценке дня ── */
+.scale {
+  margin-top: 10px;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 11px 12px;
+}
+.scale-row {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted2);
+}
+.scale-row + .scale-row { margin-top: 5px; }
+.scale-key {
+  flex-shrink: 0;
+  min-width: 34px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.scale-sep { height: 1px; background: var(--border); margin: 9px 0; }
+.scale-note { font-size: 11px; color: var(--muted); margin-top: 8px; }
+
 /* ── Время отбоя и подъёма ── */
 .time-wrap { margin-top: 14px; }
 .time-label {
@@ -582,6 +609,7 @@ body {
           '<div class="day-body"><div class="day-body-inner"><div class="day-body-pad">' +
             group(i, 'sleep', 'Сон', 'как выспался') +
             group(i, 'day', 'День', 'как прошёл рабочий день') +
+            шкалаДня() +
             timeBox(i) +
             noteBox(i) +
             '<button class="pick-clear" data-clear="' + i + '">Очистить день</button>' +
@@ -602,6 +630,21 @@ body {
     var n = (state[i] && state[i].note) || '';
     if (!n) return '';
     return '<div class="day-note-badge" data-badge="' + i + '">' + экранировать(n) + '</div>';
+  }
+
+  // Шпаргалка: по чему считать оценку дня, чтобы не спорить с собой каждый вечер
+  function шкалаДня() {
+    return '<div class="scale">' +
+      '<div class="scale-row"><span class="scale-key">до 5</span>' +
+        '<span>моя часть по работе. Сделал всё, что от меня зависело — пять. ' +
+        'Тянул и забил — три. Машины и заказы не в счёт, они не от меня.</span></div>' +
+      '<div class="scale-sep"></div>' +
+      '<div class="scale-row"><span class="scale-key">+1</span><span>рилс выложен</span></div>' +
+      '<div class="scale-row"><span class="scale-key">+1</span><span>сторис выложены</span></div>' +
+      '<div class="scale-row"><span class="scale-key">+2</span><span>разбор или шаг к продукту</span></div>' +
+      '<div class="scale-row"><span class="scale-key">+1</span><span>чтение и система</span></div>' +
+      '<div class="scale-note">Прикидка на глаз, три секунды. Не бухгалтерия.</div>' +
+    '</div>';
   }
 
   // Пропускаем только настоящее время вида 21:40, всё остальное отбрасываем
