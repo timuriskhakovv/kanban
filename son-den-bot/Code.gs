@@ -351,19 +351,27 @@ function лист() {
   let sh = ss.getSheetByName(ЛИСТ);
   if (!sh) {
     sh = ss.insertSheet(ЛИСТ);
-    sh.getRange(1, 1, 1, 5).setValues([['Дата', 'Сон', 'День', 'Обновлено', 'Заметка']]);
-    sh.getRange(1, 1, 1, 5).setFontWeight('bold');
+    sh.getRange(1, 1, 1, 7).setValues([['Дата', 'Сон', 'День', 'Обновлено', 'Заметка', 'Отбой', 'Подъём']]);
+    sh.getRange(1, 1, 1, 7).setFontWeight('bold');
     sh.setFrozenRows(1);
     sh.setColumnWidth(1, 110);
     sh.setColumnWidth(4, 130);
     sh.setColumnWidth(5, 420);
     sh.getRange('E:E').setWrap(true);
+    sh.getRange('F:G').setNumberFormat('@');
   }
   // Лист мог остаться от прежней версии, без колонки заметок
   if (sh.getLastColumn() < 5 || sh.getRange(1, 5).getValue() !== 'Заметка') {
     sh.getRange(1, 5).setValue('Заметка').setFontWeight('bold');
     sh.setColumnWidth(5, 420);
     sh.getRange('E:E').setWrap(true);
+  }
+  // …и без колонок времени отбоя и подъёма
+  if (sh.getRange(1, 6).getValue() !== 'Отбой' || sh.getRange(1, 7).getValue() !== 'Подъём') {
+    sh.getRange(1, 6, 1, 2).setValues([['Отбой', 'Подъём']]).setFontWeight('bold');
+    sh.setColumnWidth(6, 90);
+    sh.setColumnWidth(7, 90);
+    sh.getRange('F:G').setNumberFormat('@');
   }
   return sh;
 }
@@ -387,7 +395,7 @@ function найтиСтроку(sh, key) {
 }
 
 
-function записать(дата, сон, день, заметка) {
+function записать(дата, сон, день, заметка, отбой, подъём) {
   const sh = лист();
   const key = ключДаты(дата);
   let строка = найтиСтроку(sh, key);
@@ -399,6 +407,13 @@ function записать(дата, сон, день, заметка) {
   if (сон !== null && сон !== undefined) sh.getRange(строка, 2).setValue(сон);
   if (день !== null && день !== undefined) sh.getRange(строка, 3).setValue(день);
   if (заметка !== null && заметка !== undefined) sh.getRange(строка, 5).setValue(заметка);
+  // Время пишем текстом, иначе таблица превратит 21:40 в дату
+  if (отбой !== null && отбой !== undefined) {
+    sh.getRange(строка, 6).setNumberFormat('@').setValue(отбой);
+  }
+  if (подъём !== null && подъём !== undefined) {
+    sh.getRange(строка, 7).setNumberFormat('@').setValue(подъём);
+  }
   sh.getRange(строка, 4).setValue(
     Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd.MM HH:mm')
   );
@@ -409,7 +424,7 @@ function всеЗаписи() {
   const sh = лист();
   const last = sh.getLastRow();
   if (last < 2) return [];
-  const values = sh.getRange(2, 1, last - 1, 5).getValues();
+  const values = sh.getRange(2, 1, last - 1, 7).getValues();
   const out = [];
   for (let i = 0; i < values.length; i++) {
     const v = values[i][0];
@@ -418,10 +433,22 @@ function всеЗаписи() {
       дата: (v instanceof Date) ? ключДаты(v) : String(v).trim(),
       сон: Number(values[i][1]) || null,
       день: Number(values[i][2]) || null,
-      заметка: String(values[i][4] || '').trim()
+      заметка: String(values[i][4] || '').trim(),
+      отбой: времяТекстом(values[i][5]),
+      подъём: времяТекстом(values[i][6])
     });
   }
   return out;
+}
+
+
+// В ячейке может лежать и текст «21:40», и настоящее время — приводим к одному виду
+function времяТекстом(v) {
+  if (v instanceof Date) {
+    return Utilities.formatDate(v, Session.getScriptTimeZone(), 'HH:mm');
+  }
+  const s = String(v || '').trim();
+  return /^\d{1,2}:\d{2}$/.test(s) ? ('0' + s).slice(-5) : '';
 }
 
 
@@ -562,14 +589,17 @@ function doPost(e) {
     const сон = чистое(body.sleep);
     const день = чистое(body.day);
     const заметка = (typeof body.note === 'string') ? body.note.slice(0, 1000) : null;
+    const отбой = (typeof body.bed === 'string') ? чистоеВремя(body.bed) : null;
+    const подъём = (typeof body.up === 'string') ? чистоеВремя(body.up) : null;
 
     if (body.clear === true) {
       очистить(d);
     } else {
-      if (сон === null && день === null && заметка === null) {
-        return json({ ok: false, error: 'нет ни оценок, ни заметки' });
+      if (сон === null && день === null && заметка === null &&
+          отбой === null && подъём === null) {
+        return json({ ok: false, error: 'нет ни оценок, ни заметки, ни времени' });
       }
-      записать(d, сон, день, заметка);
+      записать(d, сон, день, заметка, отбой, подъём);
     }
     return json({ ok: true, data: собратьДляСтраницы() });
   } catch (err) {
@@ -595,10 +625,24 @@ function чистое(v) {
 }
 
 
+// Пустая строка — это «стереть время», поэтому она проходит, а мусор нет
+function чистоеВремя(v) {
+  const s = String(v || '').trim();
+  if (!s) return '';
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(s) ? s : null;
+}
+
+
 function собратьДляСтраницы() {
   const данные = {};
   всеЗаписи().forEach(function (e) {
-    данные[e.дата] = { sleep: e.сон || 0, day: e.день || 0, note: e.заметка || '' };
+    данные[e.дата] = {
+      sleep: e.сон || 0,
+      day: e.день || 0,
+      note: e.заметка || '',
+      bed: e.отбой || '',
+      up: e.подъём || ''
+    };
   });
   return данные;
 }

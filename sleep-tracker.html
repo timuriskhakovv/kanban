@@ -281,6 +281,43 @@ body {
   font-weight: 700;
 }
 
+/* ── Время отбоя и подъёма ── */
+.time-wrap { margin-top: 14px; }
+.time-label {
+  font-size: 12px;
+  color: var(--muted2);
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  margin-bottom: 8px;
+}
+.time-label b { color: var(--text); font-weight: 600; }
+.time-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.time-cell { display: flex; flex-direction: column; gap: 5px; }
+.time-cap { font-size: 11px; color: var(--muted); letter-spacing: 0.2px; }
+.time-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--card2, rgba(255,255,255,0.04));
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 11px 12px;
+  color: var(--text);
+  font: inherit;
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.time-input:focus { outline: none; border-color: var(--border2); }
+.time-input.saved { border-color: #34C759; }
+.time-dur {
+  font-size: 12px;
+  color: var(--muted2);
+  margin-top: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.time-dur b { color: var(--text); font-weight: 600; }
+
 .note-wrap { margin-top: 14px; }
 .note-label {
   font-size: 12px;
@@ -428,6 +465,16 @@ body {
     <div class="stat-value empty" id="avgDay">—</div>
     <div class="stat-days" id="daysDay">нет записей</div>
   </div>
+  <div class="stat">
+    <div class="stat-label">Сколько спал</div>
+    <div class="stat-value empty" id="avgDur">—</div>
+    <div class="stat-days" id="daysDur">нет записей</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Лучший отбой</div>
+    <div class="stat-value empty" id="bestBed">—</div>
+    <div class="stat-days" id="bestBedNote">нужно больше дней</div>
+  </div>
 </div>
 
 <div class="link-card">
@@ -535,6 +582,7 @@ body {
           '<div class="day-body"><div class="day-body-inner"><div class="day-body-pad">' +
             group(i, 'sleep', 'Сон', 'как выспался') +
             group(i, 'day', 'День', 'как прошёл рабочий день') +
+            timeBox(i) +
             noteBox(i) +
             '<button class="pick-clear" data-clear="' + i + '">Очистить день</button>' +
           '</div></div></div>' +
@@ -554,6 +602,52 @@ body {
     var n = (state[i] && state[i].note) || '';
     if (!n) return '';
     return '<div class="day-note-badge" data-badge="' + i + '">' + экранировать(n) + '</div>';
+  }
+
+  // Пропускаем только настоящее время вида 21:40, всё остальное отбрасываем
+  function время(v) {
+    var s = String(v || '').trim();
+    return /^([01]\d|2[0-3]):[0-5]\d$/.test(s) ? s : '';
+  }
+
+  // Сколько минут между отбоём и подъёмом. Через полночь считается правильно.
+  function минуты(t) {
+    var m = /^(\d{1,2}):(\d{2})$/.exec(t || '');
+    if (!m) return null;
+    var h = +m[1], mi = +m[2];
+    if (h > 23 || mi > 59) return null;
+    return h * 60 + mi;
+  }
+
+  function длительность(bed, up) {
+    var a = минуты(bed), b = минуты(up);
+    if (a === null || b === null) return null;
+    var d = b - a;
+    if (d <= 0) d += 24 * 60;
+    return d;
+  }
+
+  function часами(мин) {
+    var h = Math.floor(мин / 60), m = мин % 60;
+    return h + ' ч ' + ('0' + m).slice(-2) + ' мин';
+  }
+
+  function timeBox(i) {
+    var bed = (state[i] && state[i].bed) || '';
+    var up = (state[i] && state[i].up) || '';
+    var d = длительность(bed, up);
+    return '<div class="time-wrap">' +
+      '<div class="time-label"><b>Во сколько лёг и встал</b> — чтобы найти свою норму</div>' +
+      '<div class="time-row">' +
+        '<div class="time-cell"><span class="time-cap">Отбой</span>' +
+          '<input class="time-input" type="time" data-time="' + i + '-bed" value="' + bed + '"></div>' +
+        '<div class="time-cell"><span class="time-cap">Подъём</span>' +
+          '<input class="time-input" type="time" data-time="' + i + '-up" value="' + up + '"></div>' +
+      '</div>' +
+      '<div class="time-dur" data-dur="' + i + '">' +
+        (d === null ? 'Заполни оба поля — посчитаю длительность.'
+                    : 'Вышло <b>' + часами(d) + '</b>') +
+      '</div></div>';
   }
 
   function noteBox(i) {
@@ -601,7 +695,7 @@ body {
 
   /* ── Пересчёт сводки ── */
   function refreshStats() {
-    var sleep = [], day = [], good = [], bad = [];
+    var sleep = [], day = [], good = [], bad = [], длит = [], поОтбою = {};
 
     for (var i = 1; i <= DAYS; i++) {
       var e = state[i];
@@ -612,10 +706,20 @@ body {
         if (e.sleep >= 7) good.push(e.day);
         else if (e.sleep <= 5) bad.push(e.day);
       }
+      var d = длительность(e.bed, e.up);
+      if (d !== null) длит.push(d);
+      // Копим оценку сна по часу отбоя, чтобы увидеть, когда ложиться выгоднее
+      if (e.bed && e.sleep) {
+        var час = e.bed.slice(0, 2);
+        if (!поОтбою[час]) поОтбою[час] = [];
+        поОтбою[час].push(e.sleep);
+      }
     }
 
     setStat('avgSleep', 'daysSleep', sleep);
     setStat('avgDay', 'daysDay', day);
+    setDur(длит);
+    setBed(поОтбою);
 
     var gA = avg(good), bA = avg(bad);
     setBar('barGood', 'valGood', gA);
@@ -645,6 +749,55 @@ body {
     var s = 0;
     for (var i = 0; i < a.length; i++) s += a[i];
     return s / a.length;
+  }
+
+  function setDur(список) {
+    var vEl = document.getElementById('avgDur');
+    var dEl = document.getElementById('daysDur');
+    if (!список.length) {
+      vEl.textContent = '—';
+      vEl.className = 'stat-value empty';
+      dEl.textContent = 'нет записей';
+      return;
+    }
+    var сумма = 0;
+    for (var i = 0; i < список.length; i++) сумма += список[i];
+    var сред = Math.round(сумма / список.length);
+    vEl.textContent = (сред / 60).toFixed(1).replace('.', ',') + ' ч';
+    vEl.className = 'stat-value';
+    dEl.textContent = список.length + ' ' + слово(список.length);
+  }
+
+  function setBed(поОтбою) {
+    var vEl = document.getElementById('bestBed');
+    var nEl = document.getElementById('bestBedNote');
+    var лучшийЧас = null, лучшее = 0, всего = 0;
+    for (var час in поОтбою) {
+      var arr = поОтбою[час];
+      всего += arr.length;
+      if (arr.length < 2) continue;
+      var сумма = 0;
+      for (var i = 0; i < arr.length; i++) сумма += arr[i];
+      var ср = сумма / arr.length;
+      if (ср > лучшее) { лучшее = ср; лучшийЧас = час; }
+    }
+    if (лучшийЧас === null) {
+      vEl.textContent = '—';
+      vEl.className = 'stat-value empty';
+      nEl.textContent = всего ? 'нужно по два дня на час' : 'нужно больше дней';
+      return;
+    }
+    vEl.textContent = лучшийЧас + ':00';
+    vEl.className = 'stat-value';
+    nEl.textContent = 'сон в среднем ' + лучшее.toFixed(1).replace('.', ',');
+  }
+
+  function слово(n) {
+    var last = n % 10, two = n % 100;
+    if (two >= 11 && two <= 14) return 'дней';
+    if (last === 1) return 'день';
+    if (last >= 2 && last <= 4) return 'дня';
+    return 'дней';
   }
 
   function setStat(valId, daysId, arr) {
@@ -719,7 +872,7 @@ body {
       var i = +p[0], kind = p[1], v = +p[2];
       if (!state[i]) state[i] = {};
       state[i][kind] = state[i][kind] === v ? 0 : v;
-      var пусто = !state[i].sleep && !state[i].day && !state[i].note;
+      var пусто = пустойДень(i);
       if (пусто) delete state[i];
       save();
       refreshDay(i);
@@ -739,8 +892,8 @@ body {
       return;
     }
 
-    // Клик по полю заметки не должен схлопывать карточку
-    if (e.target.closest('[data-note]')) return;
+    // Клик по полю заметки или времени не должен схлопывать карточку
+    if (e.target.closest('[data-note]') || e.target.closest('[data-time]')) return;
 
     var head = e.target.closest('[data-toggle]');
     if (head) {
@@ -751,6 +904,42 @@ body {
       if (!wasOpen) card.classList.add('open');
     }
   });
+
+  function пустойДень(i) {
+    var e = state[i];
+    if (!e) return true;
+    return !e.sleep && !e.day && !e.note && !e.bed && !e.up;
+  }
+
+  /* ── Время отбоя и подъёма ── */
+  daysEl.addEventListener('change', function (e) {
+    var inp = e.target.closest('[data-time]');
+    if (!inp) return;
+    var p = inp.getAttribute('data-time').split('-');
+    var i = +p[0], kind = p[1];
+    var v = inp.value || '';
+
+    if (!state[i]) state[i] = {};
+    if (v) state[i][kind] = v;
+    else delete state[i][kind];
+
+    var пусто = пустойДень(i);
+    if (пусто) delete state[i];
+    save();
+    refreshDur(i);
+    refreshStats();
+    inp.classList.add('saved');
+    push(i, пусто);
+  });
+
+  function refreshDur(i) {
+    var box = daysEl.querySelector('[data-dur="' + i + '"]');
+    if (!box) return;
+    var d = длительность((state[i] && state[i].bed) || '', (state[i] && state[i].up) || '');
+    box.innerHTML = (d === null)
+      ? 'Заполни оба поля — посчитаю длительность.'
+      : 'Вышло <b>' + часами(d) + '</b>';
+  }
 
   /* ── Заметки: сохраняем через паузу, а не на каждую букву ── */
   var noteTimers = {};
@@ -783,7 +972,7 @@ body {
     if (text) state[i].note = text;
     else delete state[i].note;
 
-    if (!state[i].sleep && !state[i].day && !state[i].note) delete state[i];
+    if (пустойДень(i)) delete state[i];
     save();
     refreshBadge(i);
     ta.classList.add('saved');
@@ -849,7 +1038,9 @@ body {
       if (e.sleep >= 1 && e.sleep <= 10) rec.sleep = +e.sleep;
       if (e.day >= 1 && e.day <= 10) rec.day = +e.day;
       if (typeof e.note === 'string' && e.note.trim()) rec.note = e.note.trim();
-      if (rec.sleep || rec.day || rec.note) { state[n] = rec; added++; }
+      if (время(e.bed)) rec.bed = время(e.bed);
+      if (время(e.up)) rec.up = время(e.up);
+      if (rec.sleep || rec.day || rec.note || rec.bed || rec.up) { state[n] = rec; added++; }
     }
     save();
     buildDays();
@@ -922,7 +1113,9 @@ body {
           if (e.sleep >= 1 && e.sleep <= 10) rec.sleep = +e.sleep;
           if (e.day >= 1 && e.day <= 10) rec.day = +e.day;
           if (typeof e.note === 'string' && e.note.trim()) rec.note = e.note.trim();
-          if (rec.sleep || rec.day || rec.note) { свежее[d] = rec; got++; }
+          if (время(e.bed)) rec.bed = время(e.bed);
+          if (время(e.up)) rec.up = время(e.up);
+          if (rec.sleep || rec.day || rec.note || rec.bed || rec.up) { свежее[d] = rec; got++; }
         }
         state = свежее;
         save();
@@ -954,6 +1147,8 @@ body {
       sleep: (state[day] && state[day].sleep) || 0,
       day: (state[day] && state[day].day) || 0,
       note: (state[day] && state[day].note) || '',
+      bed: (state[day] && state[day].bed) || '',
+      up: (state[day] && state[day].up) || '',
       k: секрет()
     };
     fetch(sheetUrl, {
