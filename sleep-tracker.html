@@ -647,8 +647,9 @@ body {
     '</div>';
   }
 
-  // Пропускаем только настоящее время вида 21:40, всё остальное отбрасываем
-  function время(v) {
+  // Пропускаем только настоящее время вида 21:40, всё остальное отбрасываем.
+  // Имя не «время»: так уже называется печать часов последней загрузки ниже.
+  function чистоеВремя(v) {
     var s = String(v || '').trim();
     return /^([01]\d|2[0-3]):[0-5]\d$/.test(s) ? s : '';
   }
@@ -752,7 +753,7 @@ body {
       var d = длительность(e.bed, e.up);
       if (d !== null) длит.push(d);
       // Копим оценку сна по часу отбоя, чтобы увидеть, когда ложиться выгоднее
-      var чистыйОтбой = время(e.bed);
+      var чистыйОтбой = чистоеВремя(e.bed);
       if (чистыйОтбой && e.sleep) {
         var час = чистыйОтбой.slice(0, 2);
         if (!поОтбою[час]) поОтбою[час] = [];
@@ -1082,8 +1083,8 @@ body {
       if (e.sleep >= 1 && e.sleep <= 10) rec.sleep = +e.sleep;
       if (e.day >= 1 && e.day <= 10) rec.day = +e.day;
       if (typeof e.note === 'string' && e.note.trim()) rec.note = e.note.trim();
-      if (время(e.bed)) rec.bed = время(e.bed);
-      if (время(e.up)) rec.up = время(e.up);
+      if (чистоеВремя(e.bed)) rec.bed = чистоеВремя(e.bed);
+      if (чистоеВремя(e.up)) rec.up = чистоеВремя(e.up);
       if (rec.sleep || rec.day || rec.note || rec.bed || rec.up) { state[n] = rec; added++; }
     }
     save();
@@ -1157,8 +1158,8 @@ body {
           if (e.sleep >= 1 && e.sleep <= 10) rec.sleep = +e.sleep;
           if (e.day >= 1 && e.day <= 10) rec.day = +e.day;
           if (typeof e.note === 'string' && e.note.trim()) rec.note = e.note.trim();
-          if (время(e.bed)) rec.bed = время(e.bed);
-          if (время(e.up)) rec.up = время(e.up);
+          if (чистоеВремя(e.bed)) rec.bed = чистоеВремя(e.bed);
+          if (чистоеВремя(e.up)) rec.up = чистоеВремя(e.up);
           if (rec.sleep || rec.day || rec.note || rec.bed || rec.up) { свежее[d] = rec; got++; }
         }
         state = свежее;
