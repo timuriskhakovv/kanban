@@ -273,6 +273,61 @@ body {
   100% { opacity: 0; transform: translateY(-190px) scale(1.15) rotate(300deg); }
 }
 
+/* ── Живой город ── */
+.город {
+  position: relative; height: 132px; border-radius: 20px; overflow: hidden;
+  border: 1px solid var(--кант); margin-bottom: 11px;
+  box-shadow: 0 10px 26px -22px rgba(27,38,32,.7);
+}
+.небо { position: absolute; inset: 0; background: linear-gradient(180deg, #DCEFFB 0%, #F3EADA 72%, #EFE4CE 100%); }
+.солнце {
+  position: absolute; top: 16px; right: 26px; width: 26px; height: 26px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #FFE9A8, #F3C24B);
+  box-shadow: 0 0 22px rgba(243,194,75,.75); animation: дыхание 5s ease-in-out infinite;
+}
+@keyframes дыхание { 0%,100% { transform: scale(1); } 50% { transform: scale(1.09); } }
+.облако { position: absolute; font-size: 22px; opacity: .85; filter: saturate(.2) brightness(1.25); }
+.о1 { top: 12px; animation: плыть 34s linear infinite; }
+.о2 { top: 34px; font-size: 16px; animation: плыть 48s linear infinite 6s; }
+.о3 { top: 6px; font-size: 13px; animation: плыть 62s linear infinite 18s; }
+@keyframes плыть { from { left: -14%; } to { left: 108%; } }
+.холмы {
+  position: absolute; left: -12%; right: -12%; bottom: 34px; height: 54px;
+  background: radial-gradient(60% 100% at 20% 100%, #CBE0BE 0 70%, transparent 71%),
+              radial-gradient(55% 100% at 62% 100%, #D7E7CB 0 70%, transparent 71%),
+              radial-gradient(60% 100% at 95% 100%, #C3DAB6 0 70%, transparent 71%);
+}
+.дома {
+  position: absolute; left: 0; right: 0; bottom: 32px; height: 74px;
+  display: flex; align-items: flex-end; gap: 7px; padding: 0 14px; overflow: hidden;
+}
+.домик {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  animation: вырос 620ms var(--пружина) backwards;
+}
+.домик .крыша { font-size: 21px; line-height: 1; animation: качание 4.5s ease-in-out infinite; }
+.домик .стена {
+  width: 22px; border-radius: 4px 4px 0 0; background: linear-gradient(180deg, #FFFDF7, #E9DFC9);
+  border: 1px solid var(--кант2); border-bottom: none;
+}
+@keyframes вырос { from { opacity: 0; transform: translateY(18px) scale(.7); } to { opacity: 1; transform: none; } }
+@keyframes качание { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2.5px); } }
+.пустырь { font-size: 11.5px; color: #8B9483; padding-bottom: 6px; letter-spacing: .2px; }
+.дорога {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 32px;
+  background: linear-gradient(180deg, #6F6A60, #55514A);
+}
+.разметка {
+  position: absolute; top: 15px; left: 0; right: 0; height: 2px;
+  background: repeating-linear-gradient(90deg, #EFE4CE 0 14px, transparent 14px 30px);
+  animation: бег 1.6s linear infinite;
+}
+@keyframes бег { from { background-position: 0 0; } to { background-position: -44px 0; } }
+.машина {
+  position: absolute; bottom: 5px; font-size: 21px; animation: едет 9s linear infinite;
+}
+@keyframes едет { from { left: -12%; } to { left: 106%; } }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
   .монета { display: none; }
@@ -287,6 +342,17 @@ body {
   <h1>Денежный поток</h1>
   <div class="месяц" id="подпись">Месяц 1 · кирпич</div>
 </header>
+
+<section class="город" id="город">
+  <div class="небо"></div>
+  <div class="солнце"></div>
+  <div class="облако о1">☁️</div>
+  <div class="облако о2">☁️</div>
+  <div class="облако о3">☁️</div>
+  <div class="холмы"></div>
+  <div class="дома" id="дома"></div>
+  <div class="дорога"><div class="разметка"></div><div class="машина" id="машина">🚚</div></div>
+</section>
 
 <section class="табло">
   <div class="табло-верх">
@@ -646,10 +712,25 @@ body {
         (игра.событие.деньги > 0 ? "+" : "") + деньги(игра.событие.деньги) + "</span></span></div>"
       : "";
 
+    рисоватьГород();
     рисоватьВыбор();
     рисоватьПобеду();
     рисоватьНастройки();
     document.getElementById("кнопкаХода").disabled = !!(игра.предложения || игра.победа);
+  }
+
+  function рисоватьГород() {
+    var у = document.getElementById("дома");
+    if (!игра.активы.length) {
+      у.innerHTML = '<span class="пустырь">🌱 Пустой участок. Купишь актив — на нём появится строение.</span>';
+      return;
+    }
+    у.innerHTML = игра.активы.map(function (а, и) {
+      var высота = Math.max(16, Math.min(50, Math.round(а.поток / 260)));
+      return '<span class="домик" style="animation-delay:' + (и * 70) + 'ms" title="' + а.имя + '">' +
+             '<span class="крыша" style="animation-delay:' + (и * 300) + 'ms">' + а.знак + "</span>" +
+             '<span class="стена" style="height:' + высота + 'px"></span></span>';
+    }).join("");
   }
 
   function рисоватьВыбор() {
