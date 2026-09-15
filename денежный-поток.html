@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Денежный поток</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --бумага: #F6F1E6;
+  --бумага2: #EFE8D9;
+  --карта: #FFFFFF;
+  --карта2: #FBF7EE;
+  --кант: #E6DECC;
+  --кант2: #D3C7AC;
+  --латунь: #B07C24;
+  --латунь-свет: #E8C877;
+  --чернила: #1B2620;
+  --тихий: #6E7A70;
+  --тише: #97A196;
+  --поток: #2E9E5B;
+  --поток-свет: #8FD9AC;
+  --минус: #C2452D;
+  --мягко: cubic-bezier(0.23, 1, 0.32, 1);
+  --пружина: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+html { background: var(--бумага); }
+
+body {
+  font-family: 'Golos Text', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  color: var(--чернила);
+  min-height: 100dvh;
+  padding: 0 16px calc(56px + env(safe-area-inset-bottom));
+  max-width: 580px; margin: 0 auto;
+  -webkit-font-smoothing: antialiased;
+  background:
+    radial-gradient(120% 55% at 50% 0%, #FFFDF6 0%, transparent 62%),
+    repeating-linear-gradient(45deg, rgba(27,38,32,.014) 0 2px, transparent 2px 4px),
+    var(--бумага);
+  overflow-x: hidden;
+}
+
+/* ── Шапка ── */
+.шапка { padding: calc(30px + env(safe-area-inset-top)) 0 14px; text-align: center; }
+.шапка h1 {
+  font-family: 'Unbounded', sans-serif; font-weight: 900; font-size: 27px;
+  letter-spacing: -1.2px; line-height: 1;
+  background: linear-gradient(180deg, #C89A3E, var(--латунь) 55%, #7E5615);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.шапка .месяц {
+  margin-top: 7px; font-size: 11px; letter-spacing: 3.4px; text-transform: uppercase;
+  color: var(--тише); font-weight: 600;
+}
+
+/* ── Табло свободы ── */
+.табло {
+  position: relative; background: linear-gradient(165deg, #FFFFFF, #F7F2E6);
+  border: 1px solid var(--кант); border-radius: 20px; padding: 17px 18px 16px;
+  margin-bottom: 11px; overflow: hidden;
+  box-shadow: 0 10px 26px -20px rgba(27,38,32,.55);
+}
+.табло::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(85% 120% at 12% -10%, rgba(176,124,36,.10), transparent 58%);
+}
+.табло-верх { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 12px; }
+.табло-имя { font-size: 10.5px; letter-spacing: 2.6px; text-transform: uppercase; color: var(--тихий); font-weight: 600; }
+.табло-число {
+  font-family: 'Unbounded', sans-serif; font-weight: 700; font-size: 34px;
+  line-height: .9; letter-spacing: -1.6px; font-variant-numeric: tabular-nums; color: var(--чернила);
+}
+.жёлоб { height: 13px; border-radius: 7px; background: var(--бумага2);
+         border: 1px solid var(--кант); overflow: hidden; position: relative; }
+.заливка {
+  display: block; height: 100%; width: 0; border-radius: 6px;
+  background: linear-gradient(90deg, #2E9E5B, #4FC47E 70%, #8FD9AC);
+  transition: width 900ms var(--мягко);
+  box-shadow: 0 0 14px rgba(46,158,91,.45);
+}
+.жёлоб::after {
+  content: ''; position: absolute; inset: 0;
+  background: repeating-linear-gradient(90deg, transparent 0 19px, rgba(27,38,32,.10) 19px 20px);
+  pointer-events: none;
+}
+.табло-низ { margin-top: 10px; font-size: 12.5px; line-height: 1.55; color: var(--тихий); }
+.табло-низ b { color: var(--чернила); font-weight: 600; }
+
+/* ── Счётчики ── */
+.счётчики { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-bottom: 12px; }
+.счёт {
+  background: var(--карта); border: 1px solid var(--кант); border-radius: 16px;
+  padding: 12px 13px 11px; position: relative; overflow: hidden;
+  box-shadow: 0 6px 18px -16px rgba(27,38,32,.6);
+}
+.счёт .знак { position: absolute; right: 9px; top: 8px; font-size: 19px; opacity: .45; }
+.счёт-имя { font-size: 10.5px; letter-spacing: 1.4px; text-transform: uppercase; color: var(--тише); font-weight: 600; }
+.счёт-знач {
+  margin-top: 6px; font-family: 'Unbounded', sans-serif; font-weight: 700; font-size: 19px;
+  letter-spacing: -.7px; font-variant-numeric: tabular-nums;
+}
+.счёт.растёт { animation: вспышка 700ms var(--мягко); }
+@keyframes вспышка {
+  0% { box-shadow: 0 0 0 0 rgba(176,124,36,.45); }
+  100% { box-shadow: 0 0 0 16px rgba(176,124,36,0); }
+}
+
+/* ── Рычаг ── */
+.рычаг {
+  position: relative; width: 100%; height: 60px; border-radius: 17px; border: none; cursor: pointer;
+  font-family: 'Unbounded', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: -.2px;
+  color: #FFFFFF; margin-bottom: 12px; overflow: hidden;
+  background: linear-gradient(180deg, #47B978, var(--поток) 55%, #1F7B44);
+  box-shadow: 0 10px 24px -12px rgba(46,158,91,.8), inset 0 1px 0 rgba(255,255,255,.4);
+  transition: transform 140ms var(--пружина), filter 200ms ease;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+}
+.рычаг:active { transform: scale(.975) translateY(2px); }
+.рычаг:disabled { filter: grayscale(.55) brightness(1.08) opacity(.45); cursor: default; }
+.рычаг .блик {
+  position: absolute; top: 0; left: -60%; width: 40%; height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,.5), transparent);
+  animation: пробег 3.4s linear infinite;
+}
+@keyframes пробег { 0% { left: -60%; } 55%, 100% { left: 130%; } }
+
+/* ── Событие ── */
+.событие {
+  display: flex; gap: 11px; align-items: flex-start;
+  background: var(--карта); border: 1px solid var(--кант); border-left: 3px solid var(--латунь);
+  border-radius: 14px; padding: 13px 14px; margin-bottom: 12px;
+  animation: въезд 460ms var(--пружина);
+  box-shadow: 0 6px 18px -16px rgba(27,38,32,.6);
+}
+.событие .знак { font-size: 23px; line-height: 1.1; }
+.событие .текст { font-size: 13px; line-height: 1.55; color: var(--тихий); }
+.событие .текст b { color: var(--чернила); font-weight: 600; }
+.событие .сумма { font-family: 'Unbounded', sans-serif; font-weight: 700; font-size: 14px; }
+@keyframes въезд {
+  from { opacity: 0; transform: translateY(-10px) scale(.97); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ── Карты выбора ── */
+.заголовок-блока {
+  font-size: 10.5px; letter-spacing: 2.6px; text-transform: uppercase;
+  color: var(--тише); font-weight: 600; margin: 0 0 10px 3px;
+}
+.карта-выбор {
+  position: relative; display: flex; gap: 13px; align-items: flex-start;
+  background: linear-gradient(165deg, #FFFFFF, var(--карта2));
+  border: 1px solid var(--кант); border-radius: 18px; padding: 14px 15px;
+  margin-bottom: 9px; cursor: pointer; overflow: hidden;
+  box-shadow: 0 8px 20px -18px rgba(27,38,32,.7);
+  transition: transform 160ms var(--пружина), border-color 200ms ease, box-shadow 220ms ease;
+  animation: появление 420ms var(--мягко) backwards;
+  -webkit-tap-highlight-color: transparent;
+}
+.карта-выбор:nth-child(2) { animation-delay: 70ms; }
+.карта-выбор:nth-child(3) { animation-delay: 140ms; }
+.карта-выбор:nth-child(4) { animation-delay: 210ms; }
+@keyframes появление {
+  from { opacity: 0; transform: translateY(14px) rotate(-.6deg); }
+  to { opacity: 1; transform: none; }
+}
+.карта-выбор:hover { border-color: var(--кант2); transform: translateY(-2px);
+                     box-shadow: 0 16px 30px -22px rgba(27,38,32,.8); }
+.карта-выбор:active { transform: scale(.985); }
+.карта-выбор.нельзя { opacity: .45; cursor: default; }
+.карта-выбор.нельзя:hover { transform: none; border-color: var(--кант); }
+.значок {
+  width: 46px; height: 46px; flex: none; border-radius: 14px; display: grid; place-items: center;
+  font-size: 24px; background: var(--бумага2); border: 1px solid var(--кант);
+}
+.карта-тело { flex: 1; min-width: 0; }
+.карта-верх { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.карта-имя { font-weight: 600; font-size: 14.5px; letter-spacing: -.2px; }
+.карта-цена { font-family: 'Unbounded', sans-serif; font-size: 12.5px; color: var(--латунь); white-space: nowrap; }
+.карта-опис { font-size: 12.5px; color: var(--тихий); line-height: 1.5; margin-top: 5px; }
+.карта-итог { margin-top: 8px; font-size: 12.5px; font-weight: 600; display: flex; gap: 8px; flex-wrap: wrap; }
+.плюс { color: var(--поток); }
+.минус { color: var(--минус); }
+.ярлык {
+  font-size: 9.5px; letter-spacing: 1.4px; text-transform: uppercase; padding: 3px 7px;
+  border-radius: 6px; border: 1px solid currentColor; opacity: .85;
+}
+
+.пропустить {
+  width: 100%; height: 46px; border-radius: 14px; background: transparent;
+  border: 1px dashed var(--кант2); color: var(--тихий); font: inherit; font-size: 13px; cursor: pointer;
+  transition: border-color 200ms ease, color 200ms ease;
+}
+.пропустить:hover { color: var(--чернила); border-color: var(--латунь); }
+
+/* ── Блоки ── */
+.блок { background: var(--карта); border: 1px solid var(--кант); border-radius: 18px;
+        padding: 15px 16px; margin-bottom: 11px;
+        box-shadow: 0 6px 18px -18px rgba(27,38,32,.7); }
+.строка { display: flex; justify-content: space-between; align-items: center; gap: 10px;
+          font-size: 13.5px; padding: 9px 0; border-bottom: 1px solid var(--кант); }
+.строка:last-child { border-bottom: none; }
+.строка .лево { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.строка .лево span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.строка .право { font-variant-numeric: tabular-nums; color: var(--тихий); white-space: nowrap; font-size: 12.5px; }
+.пусто { font-size: 12.5px; color: var(--тише); line-height: 1.55; }
+
+.мини {
+  height: 27px; padding: 0 11px; border-radius: 9px; background: var(--бумага2);
+  border: 1px solid var(--кант2); color: var(--латунь); font: inherit; font-size: 11px;
+  cursor: pointer; white-space: nowrap;
+  transition: background 180ms ease, transform 140ms var(--пружина);
+}
+.мини:hover { background: #F0E7D4; }
+.мини:active { transform: scale(.94); }
+
+/* ── Соперники ── */
+.бот { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--кант); }
+.бот:last-child { border-bottom: none; }
+.бот .лицо { font-size: 19px; width: 24px; text-align: center; }
+.бот .имя { font-size: 12.5px; width: 108px; flex: none; color: var(--тихий); }
+.бот .жёлоб { height: 8px; flex: 1; }
+.бот .заливка { background: linear-gradient(90deg, #D9B462, var(--латунь)); box-shadow: none; }
+.бот .число { font-size: 11.5px; color: var(--тише); width: 46px; text-align: right;
+              font-variant-numeric: tabular-nums; }
+
+/* ── Журнал ── */
+.запись { padding: 9px 0; border-bottom: 1px solid var(--кант); font-size: 12.5px;
+          line-height: 1.6; color: var(--тихий); }
+.запись:last-child { border-bottom: none; }
+.запись b { color: var(--чернила); font-weight: 600; font-family: 'Unbounded', sans-serif;
+            font-size: 11px; letter-spacing: .4px; }
+
+/* ── Настройки ── */
+.поле { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 7px 0; }
+.поле label { font-size: 12.5px; color: var(--тихий); }
+.поле input {
+  width: 132px; background: var(--бумага2); border: 1px solid var(--кант); border-radius: 10px;
+  padding: 9px 11px; color: var(--чернила); font: inherit; font-size: 13.5px; text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.поле input:focus { outline: none; border-color: var(--латунь); }
+.пара { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 13px; }
+.кнопка {
+  height: 44px; border-radius: 13px; background: transparent; border: 1px solid var(--кант2);
+  color: var(--тихий); font: inherit; font-size: 12.5px; cursor: pointer;
+  transition: color 180ms ease, border-color 180ms ease, transform 140ms var(--пружина);
+}
+.кнопка:hover { color: var(--чернила); border-color: var(--латунь); }
+.кнопка:active { transform: scale(.98); }
+
+/* ── Победа ── */
+.победа {
+  position: relative; overflow: hidden; border-radius: 20px; padding: 22px 20px; margin-bottom: 12px;
+  background: linear-gradient(160deg, #E4F6EA, #CDEBD9);
+  border: 1px solid #A8D9BC;
+  animation: появление 600ms var(--пружина);
+}
+.победа h2 { font-family: 'Unbounded', sans-serif; font-weight: 900; font-size: 21px;
+             letter-spacing: -.8px; margin-bottom: 9px; color: #14522F; }
+.победа p { font-size: 13.5px; line-height: 1.6; color: #2C6144; }
+
+/* ── Летящие монеты ── */
+#монеты { position: fixed; inset: 0; pointer-events: none; z-index: 40; overflow: hidden; }
+.монета { position: absolute; font-size: 22px; animation: полёт 1500ms cubic-bezier(.2,.7,.35,1) forwards; }
+@keyframes полёт {
+  0% { opacity: 0; transform: translateY(0) scale(.5) rotate(0deg); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-190px) scale(1.15) rotate(300deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  .монета { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div id="монеты"></div>
+
+<header class="шапка">
+  <h1>Денежный поток</h1>
+  <div class="месяц" id="подпись">Месяц 1 · кирпич</div>
+</header>
+
+<section class="табло">
+  <div class="табло-верх">
+    <span class="табло-имя">До свободы</span>
+    <span class="табло-число" id="процент">0%</span>
+  </div>
+  <div class="жёлоб"><i class="заливка" id="полоса"></i></div>
+  <div class="табло-низ" id="табло-текст"></div>
+</section>
+
+<section class="счётчики">
+  <div class="счёт" id="счёт-наличные"><span class="знак">💵</span>
+    <div class="счёт-имя">На руках</div><div class="счёт-знач" id="наличные">0</div></div>
+  <div class="счёт" id="счёт-пассив"><span class="знак">🌊</span>
+    <div class="счёт-имя">Без тебя</div><div class="счёт-знач" id="пассив">0</div></div>
+  <div class="счёт" id="счёт-расходы"><span class="знак">🔻</span>
+    <div class="счёт-имя">Расходы</div><div class="счёт-знач" id="расходы">0</div></div>
+  <div class="счёт" id="счёт-долги"><span class="знак">⛓️</span>
+    <div class="счёт-имя">Долги</div><div class="счёт-знач" id="долги">0</div></div>
+</section>
+
+<button class="рычаг" id="кнопкаХода"><span class="блик"></span>🎲 Прожить месяц</button>
+
+<div id="событие"></div>
+<div id="победа"></div>
+<div id="выбор"></div>
+
+<section class="блок">
+  <div class="заголовок-блока">Твои активы</div>
+  <div id="активы"></div>
+</section>
+
+<section class="блок">
+  <div class="заголовок-блока">Долги</div>
+  <div id="списокДолгов"></div>
+</section>
+
+<section class="блок">
+  <div class="заголовок-блока">Соперники</div>
+  <div id="боты"></div>
+</section>
+
+<section class="блок">
+  <div class="заголовок-блока">Что происходило</div>
+  <div id="лог"></div>
+</section>
+
+<section class="блок">
+  <div class="заголовок-блока">Твои стартовые цифры</div>
+  <div id="настройки"></div>
+  <div class="пара">
+    <button class="кнопка" id="начать">Начать с этих цифр</button>
+    <button class="кнопка" id="сброс">Вернуть реальные</button>
+  </div>
+</section>
+
+<script>
+(function () {
+  "use strict";
+
+  var ПО_УМОЛЧАНИЮ = {
+    фикса: 200000, логистикаДо: 60000, бытовые: 120000,
+    ипотекаПлатёж: 55000, ипотекаОстаток: 6000000,
+    кредитПлатёж: 35000, кредитОстаток: 1200000,
+    ильназОстаток: 530000, наличные: 27300
+  };
+
+  var ПОЛЯ = [
+    ["фикса", "Фикса в месяц"], ["логистикаДо", "Логистика сверху, до"],
+    ["бытовые", "Быт и семья в месяц"], ["ипотекаПлатёж", "Платёж по ипотеке"],
+    ["ипотекаОстаток", "Ипотека, остаток"], ["кредитПлатёж", "Платёж по кредиту"],
+    ["кредитОстаток", "Кредит, остаток"], ["ильназОстаток", "Долг Ильназу"],
+    ["наличные", "Деньги на руках"]
+  ];
+
+  var ВОЗМОЖНОСТИ = [
+    { имя: "Гараж под аренду", знак: "🏚", цена: 180000, поток: 4000, тип: "актив",
+      опис: "Старый гараж в городе. Дальнобойщик держит там запчасти." },
+    { имя: "Комната в общежитии", знак: "🛏", цена: 450000, поток: 11000, тип: "актив",
+      опис: "Далеко от центра, зато жильцы не переводятся." },
+    { имя: "Доля в шиномонтаже", знак: "🛞", цена: 300000, поток: 9000, тип: "актив",
+      опис: "Знакомый зовёт третьим. Летом просадка, зимой вал." },
+    { имя: "Прицеп в аренду", знак: "🚚", цена: 120000, поток: 3500, тип: "актив",
+      опис: "Сдаёшь посуточно соседям и мужикам с базы." },
+    { имя: "Вклад под проценты", знак: "🏦", цена: 200000, поток: 2500, тип: "актив",
+      опис: "Скучно и надёжно. Деньги лежат, процент капает." },
+    { имя: "Квартира в ипотеку под сдачу", знак: "🏢", цена: 400000, поток: 6000, тип: "актив",
+      долгПлюс: 2600000, долгПлатёж: 24000,
+      опис: "Первый взнос твой, остальное банк. Аренда почти покрывает платёж." },
+    { имя: "Партия кирпича со скидкой", знак: "🧱", цена: 150000, разовый: 260000, тип: "сделка",
+      опис: "Перепродашь за полтора месяца. Навар есть, потока нет." },
+    { имя: "Машина в кредит", знак: "🚗", цена: 300000, поток: -18000, тип: "ловушка",
+      долгПлюс: 1500000, долгПлатёж: 32000,
+      опис: "Красиво, удобно и минус каждый месяц. Выглядит как успех." },
+    { имя: "Курс по инвестициям", знак: "📚", цена: 90000, поток: 0, тип: "ловушка",
+      опис: "Обещают доходность. По факту расход, а не актив." },
+    { имя: "Станок для тротуарной плитки", знак: "⚙️", цена: 260000, поток: 7000, тип: "актив",
+      опис: "Работает в сезон, стоит в гараже зимой." }
+  ];
+
+  var СОБЫТИЯ = [
+    { знак: "🛞", текст: "Два колеса под замену, виден корд.", деньги: -13000 },
+    { знак: "💥", текст: "Трещина на лобовом поехала, меняешь стекло.", деньги: -22000 },
+    { знак: "💸", текст: "Пришла оплата за вебинар.", деньги: 18000 },
+    { знак: "🚰", текст: "Полетел насос водоочистки, вызывал мастера.", деньги: -9000 },
+    { знак: "🧱", текст: "Крупная отгрузка, премия сверху.", деньги: 40000 },
+    { знак: "❄️", текст: "Зимняя резина, откладывать некуда.", деньги: -20000 },
+    { знак: "🩺", текст: "Сын заболел, лекарства и врач.", деньги: -7000 },
+    { знак: "🤝", текст: "Знакомый вернул старый долг.", деньги: 25000 },
+    { знак: "🏗", текст: "Утепление фундамента: материалы и дюбеля.", деньги: -14000 },
+    { знак: "⏰", текст: "Взял подработку на выходных.", деньги: 15000 },
+    { знак: "🎁", текст: "День рождения в семье, подарок и стол.", деньги: -11000 }
+  ];
+
+  var БОТЫ = [
+    { имя: "Гасит долги", лицо: "🐢", стратегия: "долг" },
+    { имя: "Скупает активы", лицо: "🦊", стратегия: "актив" }
+  ];
+
+  var КЛЮЧ = "поток-игра-2";
+  var игра = null;
+
+  function деньги(n) {
+    return (n < 0 ? "−" : "") + Math.abs(Math.round(n)).toLocaleString("ru-RU") + " ₽";
+  }
+  function коротко(n) {
+    var a = Math.abs(n);
+    if (a >= 1000000) return (n < 0 ? "−" : "") + (a / 1000000).toFixed(a >= 10000000 ? 0 : 1).replace(".", ",") + " млн";
+    if (a >= 10000) return (n < 0 ? "−" : "") + Math.round(a / 1000) + " тыс";
+    return деньги(n);
+  }
+  function сохранить() { try { localStorage.setItem(КЛЮЧ, JSON.stringify(игра)); } catch (e) {} }
+
+  function новая(цифры) {
+    return {
+      цифры: цифры, месяц: 1, наличные: цифры.наличные, активы: [], допПлатежи: 0,
+      долги: [
+        { имя: "Ипотека", знак: "🏠", остаток: цифры.ипотекаОстаток, платёж: цифры.ипотекаПлатёж },
+        { имя: "Кредит", знак: "🏦", остаток: цифры.кредитОстаток, платёж: цифры.кредитПлатёж },
+        { имя: "Долг Ильназу", знак: "🤝", остаток: цифры.ильназОстаток, платёж: 0 }
+      ],
+      лог: [], предложения: null, победа: 0, событие: null,
+      боты: БОТЫ.map(function (б) {
+        return { имя: б.имя, лицо: б.лицо, стратегия: б.стратегия, пассив: 0,
+                 расходы: цифры.бытовые, победил: 0 };
+      })
+    };
+  }
+
+  function загрузить() {
+    try {
+      var с = localStorage.getItem(КЛЮЧ);
+      if (с) { игра = JSON.parse(с); return; }
+    } catch (e) {}
+    игра = новая(Object.assign({}, ПО_УМОЛЧАНИЮ));
+  }
+
+  function расходыВсего() {
+    var с = игра.цифры.бытовые + игра.допПлатежи;
+    игра.долги.forEach(function (д) { if (д.остаток > 0) с += д.платёж; });
+    return с;
+  }
+  function пассивВсего() { return игра.активы.reduce(function (с, а) { return с + а.поток; }, 0); }
+  function долгиВсего() { return игра.долги.reduce(function (с, д) { return с + Math.max(0, д.остаток); }, 0); }
+  function процентСвободы() {
+    var р = расходыВсего();
+    return р <= 0 ? 100 : Math.max(0, Math.min(100, Math.round(пассивВсего() / р * 100)));
+  }
+
+  /* ── Монетки ── */
+  function сыпануть(сколько, знак) {
+    var слой = document.getElementById("монеты");
+    var кнопка = document.getElementById("кнопкаХода").getBoundingClientRect();
+    for (var i = 0; i < сколько; i++) {
+      var м = document.createElement("div");
+      м.className = "монета";
+      м.textContent = знак || "🪙";
+      м.style.left = (кнопка.left + Math.random() * кнопка.width) + "px";
+      м.style.top = (кнопка.top - 10) + "px";
+      м.style.animationDelay = (Math.random() * 260) + "ms";
+      слой.appendChild(м);
+      setTimeout(function (узел) { return function () { узел.remove(); }; }(м), 1900);
+    }
+  }
+
+  function мигнуть(ид) {
+    var у = document.getElementById(ид);
+    у.classList.remove("растёт");
+    void у.offsetWidth;
+    у.classList.add("растёт");
+  }
+
+  /* ── Ход ── */
+  function прожитьМесяц() {
+    if (игра.победа || игра.предложения) return;
+    var строки = [];
+
+    var логистика = Math.round(Math.random() * игра.цифры.логистикаДо / 1000) * 1000;
+    var пассив = пассивВсего();
+    var доход = игра.цифры.фикса + логистика + пассив;
+    игра.наличные += доход;
+    строки.push("Пришло " + деньги(доход) + (пассив ? ", из них с активов " + деньги(пассив) : ""));
+
+    var расход = расходыВсего();
+    игра.наличные -= расход;
+    строки.push("Ушло на быт и платежи " + деньги(расход));
+
+    игра.долги.forEach(function (д) {
+      if (д.остаток > 0 && д.платёж > 0) д.остаток = Math.max(0, д.остаток - д.платёж * 0.45);
+    });
+
+    игра.событие = null;
+    if (Math.random() < 0.5) {
+      var с = СОБЫТИЯ[Math.floor(Math.random() * СОБЫТИЯ.length)];
+      игра.наличные += с.деньги;
+      игра.событие = с;
+      строки.push(с.текст + " " + деньги(с.деньги));
+    }
+
+    ходБотов();
+    игра.лог.unshift({ месяц: игра.месяц, строки: строки });
+    игра.лог = игра.лог.slice(0, 12);
+    игра.месяц += 1;
+    игра.предложения = тричего();
+    проверитьПобеду();
+    сохранить();
+    нарисовать();
+
+    сыпануть(доход > расход ? 9 : 4, доход > расход ? "🪙" : "💸");
+    мигнуть("счёт-наличные");
+  }
+
+  function тричего() {
+    var копия = ВОЗМОЖНОСТИ.slice(), выбор = [];
+    while (выбор.length < 3 && копия.length) {
+      выбор.push(копия.splice(Math.floor(Math.random() * копия.length), 1)[0]);
+    }
+    return выбор;
+  }
+
+  function взять(и) {
+    var в = игра.предложения[и];
+    if (!в || игра.наличные < в.цена) return;
+    игра.наличные -= в.цена;
+
+    if (в.тип === "сделка") {
+      игра.наличные += в.разовый;
+      записать("Сделка «" + в.имя + "»: вложил " + деньги(в.цена) + ", вернулось " + деньги(в.разовый));
+      сыпануть(7, "🪙");
+    } else if (в.тип === "ловушка") {
+      if (в.долгПлюс) игра.долги.push({ имя: в.имя, знак: в.знак, остаток: в.долгПлюс, платёж: в.долгПлатёж });
+      if (в.поток < 0) игра.допПлатежи += Math.abs(в.поток);
+      записать("Взял «" + в.имя + "». Расходы выросли.");
+      сыпануть(6, "💸");
+      мигнуть("счёт-расходы");
+    } else {
+      игра.активы.push({ имя: в.имя, знак: в.знак, поток: в.поток });
+      if (в.долгПлюс) игра.долги.push({ имя: в.имя, знак: в.знак, остаток: в.долгПлюс, платёж: в.долгПлатёж });
+      записать("Купил «" + в.имя + "». Плюс " + деньги(в.поток) + " в месяц.");
+      сыпануть(8, "🌊");
+      мигнуть("счёт-пассив");
+    }
+    игра.предложения = null;
+    проверитьПобеду();
+    сохранить();
+    нарисовать();
+  }
+
+  function погасить(и) {
+    var д = игра.долги[и];
+    var сумма = Math.min(игра.наличные, д.остаток);
+    if (сумма < 1000) return;
+    игра.наличные -= сумма;
+    д.остаток -= сумма;
+    записать("Погасил «" + д.имя + "» на " + деньги(сумма) + (д.остаток <= 0 ? ". Закрыт." : ""));
+    сохранить(); нарисовать(); мигнуть("счёт-долги"); сыпануть(5, "⛓️");
+  }
+
+  function записать(текст) {
+    if (!игра.лог.length || игра.лог[0].месяц !== игра.месяц) игра.лог.unshift({ месяц: игра.месяц, строки: [] });
+    игра.лог[0].строки.push(текст);
+  }
+
+  function ходБотов() {
+    игра.боты.forEach(function (б) {
+      if (б.победил) return;
+      if (б.стратегия === "актив") {
+        if (Math.random() < 0.5) б.пассив += 3000 + Math.round(Math.random() * 5000);
+        if (Math.random() < 0.25) б.расходы += 4000;
+      } else {
+        if (Math.random() < 0.55) б.расходы = Math.max(игра.цифры.бытовые * 0.6, б.расходы - 3000);
+        if (Math.random() < 0.3) б.пассив += 1500;
+      }
+      if (б.пассив >= б.расходы) б.победил = игра.месяц;
+    });
+  }
+
+  function проверитьПобеду() {
+    if (!игра.победа && пассивВсего() >= расходыВсего()) {
+      игра.победа = игра.месяц;
+      setTimeout(function () { сыпануть(22, "🎉"); }, 140);
+    }
+  }
+
+  /* ── Рисование ── */
+  function нарисовать() {
+    var р = расходыВсего(), п = пассивВсего(), проц = процентСвободы();
+
+    document.getElementById("подпись").textContent = "Месяц " + игра.месяц + " · кирпич";
+    document.getElementById("процент").textContent = проц + "%";
+    document.getElementById("полоса").style.width = проц + "%";
+    document.getElementById("табло-текст").innerHTML =
+      "Свобода наступит, когда доход без тебя перекроет расходы. Сейчас <b>" +
+      деньги(п) + "</b> против <b>" + деньги(р) + "</b>.";
+
+    document.getElementById("наличные").textContent = коротко(игра.наличные);
+    document.getElementById("пассив").textContent = коротко(п);
+    document.getElementById("расходы").textContent = коротко(р);
+    document.getElementById("долги").textContent = коротко(долгиВсего());
+
+    document.getElementById("активы").innerHTML = игра.активы.length
+      ? игра.активы.map(function (а) {
+          return '<div class="строка"><span class="лево">' + а.знак + ' <span>' + а.имя +
+                 '</span></span><span class="право плюс">+' + деньги(а.поток) + "</span></div>";
+        }).join("")
+      : '<div class="пусто">Пусто. Актив это то, что платит тебе каждый месяц, даже когда ты спишь.</div>';
+
+    document.getElementById("списокДолгов").innerHTML = игра.долги.map(function (д, и) {
+      if (д.остаток <= 0) {
+        return '<div class="строка"><span class="лево">' + д.знак + ' <span>' + д.имя +
+               '</span></span><span class="право плюс">закрыт ✅</span></div>';
+      }
+      var можно = игра.наличные >= 1000;
+      return '<div class="строка"><span class="лево">' + д.знак + ' <span>' + д.имя + "</span>" +
+             (можно ? '<button class="мини" data-гасить="' + и + '">погасить</button>' : "") +
+             '</span><span class="право">' + коротко(д.остаток) +
+             (д.платёж ? " · " + коротко(д.платёж) + "/мес" : "") + "</span></div>";
+    }).join("");
+
+    document.getElementById("боты").innerHTML = игра.боты.map(function (б) {
+      var п2 = Math.max(0, Math.min(100, Math.round(б.пассив / б.расходы * 100)));
+      return '<div class="бот"><span class="лицо">' + б.лицо + '</span><span class="имя">' + б.имя + "</span>" +
+             '<span class="жёлоб"><i class="заливка" style="width:' + п2 + '%"></i></span>' +
+             '<span class="число">' + (б.победил ? "вышел" : п2 + "%") + "</span></div>";
+    }).join("");
+
+    document.getElementById("лог").innerHTML = игра.лог.length
+      ? игра.лог.map(function (з) {
+          return '<div class="запись"><b>МЕСЯЦ ' + з.месяц + "</b><br>" + з.строки.join("<br>") + "</div>";
+        }).join("")
+      : '<div class="пусто">Нажми рычаг и проживи первый месяц.</div>';
+
+    var уз = document.getElementById("событие");
+    уз.innerHTML = игра.событие
+      ? '<div class="событие"><span class="знак">' + игра.событие.знак + '</span><span class="текст">' +
+        игра.событие.текст + ' <span class="сумма ' + (игра.событие.деньги > 0 ? "плюс" : "минус") + '">' +
+        (игра.событие.деньги > 0 ? "+" : "") + деньги(игра.событие.деньги) + "</span></span></div>"
+      : "";
+
+    рисоватьВыбор();
+    рисоватьПобеду();
+    рисоватьНастройки();
+    document.getElementById("кнопкаХода").disabled = !!(игра.предложения || игра.победа);
+  }
+
+  function рисоватьВыбор() {
+    var у = document.getElementById("выбор");
+    if (!игра.предложения) { у.innerHTML = ""; return; }
+    var h = '<div class="заголовок-блока">Что сделаешь в этом месяце</div>';
+    игра.предложения.forEach(function (в, и) {
+      var хватает = игра.наличные >= в.цена;
+      var итог = в.тип === "сделка"
+        ? '<span class="плюс">вернётся ' + деньги(в.разовый) + "</span>"
+        : (в.поток > 0 ? '<span class="плюс">+' + деньги(в.поток) + " в месяц</span>"
+          : в.поток < 0 ? '<span class="минус">' + деньги(в.поток) + " в месяц</span>"
+          : '<span class="минус">потока нет</span>');
+      if (в.долгПлюс) итог += '<span class="минус">долг ' + коротко(в.долгПлюс) + "</span>";
+      if (в.тип === "ловушка") итог += '<span class="ярлык минус">ловушка</span>';
+      if (в.тип === "актив") итог += '<span class="ярлык плюс">актив</span>';
+      h += '<div class="карта-выбор' + (хватает ? "" : " нельзя") + '" data-взять="' + и + '">' +
+             '<span class="значок">' + в.знак + "</span>" +
+             '<span class="карта-тело"><span class="карта-верх"><span class="карта-имя">' + в.имя +
+             '</span><span class="карта-цена">' + коротко(в.цена) + "</span></span>" +
+             '<span class="карта-опис">' + в.опис + "</span>" +
+             '<span class="карта-итог">' + итог + "</span></span></div>";
+    });
+    h += '<button class="пропустить" id="пропустить">Ничего не брать, оставить деньги</button>';
+    у.innerHTML = h;
+  }
+
+  function рисоватьПобеду() {
+    var у = document.getElementById("победа");
+    у.innerHTML = игра.победа
+      ? '<div class="победа"><h2>🏁 Ты вышел из круга</h2><p>Месяц ' + игра.победа +
+        ". Доход без тебя перекрыл расходы. Работа стала выбором, а не обязанностью. " +
+        "Пролистай журнал и посмотри, какие решения тебя сюда привели.</p></div>"
+      : "";
+  }
+
+  function рисоватьНастройки() {
+    var у = document.getElementById("настройки");
+    if (у.dataset.готово === "1") return;
+    у.innerHTML = ПОЛЯ.map(function (п) {
+      return '<div class="поле"><label>' + п[1] + '</label>' +
+             '<input type="number" step="1000" data-поле="' + п[0] + '" value="' + игра.цифры[п[0]] + '"></div>';
+    }).join("");
+    у.dataset.готово = "1";
+  }
+
+  document.getElementById("кнопкаХода").addEventListener("click", прожитьМесяц);
+
+  document.body.addEventListener("click", function (e) {
+    var к = e.target.closest("[data-взять]");
+    if (к && !к.classList.contains("нельзя")) { взять(+к.getAttribute("data-взять")); return; }
+
+    if (e.target.id === "пропустить") {
+      записать("Ничего не брал, деньги остались на руках.");
+      игра.предложения = null; сохранить(); нарисовать(); return;
+    }
+
+    var г = e.target.closest("[data-гасить]");
+    if (г) { погасить(+г.getAttribute("data-гасить")); return; }
+
+    if (e.target.id === "начать") {
+      var новые = Object.assign({}, ПО_УМОЛЧАНИЮ);
+      document.querySelectorAll("[data-поле]").forEach(function (в) {
+        var з = parseInt(в.value, 10);
+        if (!isNaN(з)) новые[в.getAttribute("data-поле")] = з;
+      });
+      игра = новая(новые); сохранить(); нарисовать(); window.scrollTo({ top: 0, behavior: "smooth" }); return;
+    }
+
+    if (e.target.id === "сброс") {
+      игра = новая(Object.assign({}, ПО_УМОЛЧАНИЮ));
+      document.getElementById("настройки").dataset.готово = "";
+      сохранить(); нарисовать(); window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  });
+
+  загрузить();
+  нарисовать();
+})();
+</script>
+</body>
+</html>
