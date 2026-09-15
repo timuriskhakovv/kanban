@@ -273,6 +273,27 @@ body {
   100% { opacity: 0; transform: translateY(-190px) scale(1.15) rotate(300deg); }
 }
 
+/* ── Фон за плашками ── */
+#фон { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.пятно { position: absolute; border-radius: 50%; filter: blur(46px); opacity: .5; }
+.п1 { width: 320px; height: 320px; left: -110px; top: 6%; background: #DCE9F6; animation: дрейф 26s ease-in-out infinite; }
+.п2 { width: 280px; height: 280px; right: -100px; top: 38%; background: #EAF3DE; animation: дрейф 32s ease-in-out infinite reverse; }
+.п3 { width: 340px; height: 340px; left: 12%; bottom: -120px; background: #F7E9CF; animation: дрейф 38s ease-in-out infinite 4s; }
+@keyframes дрейф {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(18px, -26px) scale(1.07); }
+}
+.тень { position: absolute; font-size: 44px; opacity: .06; filter: grayscale(.25); }
+.т1 { left: 6%;  top: 16%; animation: парение 19s ease-in-out infinite; }
+.т2 { right: 9%; top: 27%; font-size: 34px; animation: парение 23s ease-in-out infinite 3s; }
+.т3 { left: 11%; top: 54%; font-size: 38px; animation: парение 27s ease-in-out infinite 6s; }
+.т4 { right: 7%; top: 68%; font-size: 40px; animation: парение 31s ease-in-out infinite 2s; }
+.т5 { left: 5%;  bottom: 8%; font-size: 36px; animation: парение 24s ease-in-out infinite 9s; }
+@keyframes парение {
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  50% { transform: translateY(-26px) rotate(5deg); }
+}
+
 /* ── Живой город ── */
 .город {
   position: relative; height: 132px; border-radius: 20px; overflow: hidden;
@@ -325,6 +346,7 @@ body {
 @keyframes бег { from { background-position: 0 0; } to { background-position: -44px 0; } }
 .машина {
   position: absolute; bottom: 5px; font-size: 21px; animation: едет 9s linear infinite;
+  transform: scaleX(-1);  /* эмодзи смотрит влево, разворачиваем по ходу движения */
 }
 @keyframes едет { from { left: -12%; } to { left: 106%; } }
 
@@ -335,6 +357,12 @@ body {
 </style>
 </head>
 <body>
+
+<div id="фон" aria-hidden="true">
+  <span class="пятно п1"></span><span class="пятно п2"></span><span class="пятно п3"></span>
+  <span class="тень т1">🏠</span><span class="тень т2">🪙</span><span class="тень т3">📈</span>
+  <span class="тень т4">🧱</span><span class="тень т5">🚚</span>
+</div>
 
 <div id="монеты"></div>
 
@@ -429,6 +457,14 @@ body {
   ];
 
   var ВОЗМОЖНОСТИ = [
+    { имя: "Бензопила напрокат", знак: "🪚", цена: 18000, поток: 900, тип: "актив",
+      опис: "Соседи по посёлку берут на выходные. Мелочь, а капает." },
+    { имя: "Пуско-зарядное в аренду", знак: "🔋", цена: 25000, поток: 1200, тип: "актив",
+      опис: "Зимой без него никто не заводится. Отдаёшь на день." },
+    { имя: "Место в гараже под хранение", знак: "📦", цена: 40000, поток: 1500, тип: "актив",
+      опис: "Освободил угол, сдал под вещи знакомому." },
+    { имя: "Зимняя резина с Авито на перепродажу", знак: "🛞", цена: 30000, разовый: 46000, тип: "сделка",
+      опис: "Взял комплект дёшево, подождал холодов, продал." },
     { имя: "Гараж под аренду", знак: "🏚", цена: 180000, поток: 4000, тип: "актив",
       опис: "Старый гараж в городе. Дальнобойщик держит там запчасти." },
     { имя: "Комната в общежитии", знак: "🛏", цена: 450000, поток: 11000, тип: "актив",
