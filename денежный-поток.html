@@ -359,26 +359,63 @@ body {
 }
 @keyframes вырос { from { opacity: 0; transform: translateY(18px) scale(.7); } to { opacity: 1; transform: none; } }
 @keyframes качание { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2.5px); } }
+.покупатель {
+  background: linear-gradient(165deg, #FFFBEF, #F8EFD8); border: 1px solid var(--латунь-свет);
+  border-radius: 18px; padding: 14px 15px; margin-bottom: 12px; animation: въезд 420ms var(--пружина);
+}
+.покупатель-текст { font-size: 13.5px; line-height: 1.5; }
+.покупатель .пара { margin-top: 10px; }
 .пустырь { font-size: 11.5px; color: #8B9483; padding-bottom: 6px; letter-spacing: .2px; }
 .дорога {
   position: absolute; left: 0; right: 0; bottom: 0; height: 32px;
   background: linear-gradient(180deg, #6F6A60, #55514A);
+  container-type: inline-size;
 }
 .разметка {
   position: absolute; top: 15px; left: 0; right: 0; height: 2px;
   background: repeating-linear-gradient(90deg, #EFE4CE 0 14px, transparent 14px 30px);
-  animation: бег 1.6s linear infinite;
+  animation: бег 1.1s linear infinite;
 }
-@keyframes бег { from { background-position: 0 0; } to { background-position: -44px 0; } }
+/* сдвиг ровно на один период рисунка (14 + 16 = 30px), иначе на стыке круга разметка прыгает */
+@keyframes бег { from { background-position: 0 0; } to { background-position: -30px 0; } }
+/* Грузовик едет через всю дорогу: от края до края по transform, без рывка на возврате —
+   возврат происходит за кадром, когда он уже целиком скрылся */
 .машина {
-  position: absolute; bottom: 5px; font-size: 21px; animation: едет 9s linear infinite;
-  transform: scaleX(-1);  /* эмодзи смотрит влево, разворачиваем по ходу движения */
+  position: absolute; left: 0; bottom: 14px; font-size: 20px; line-height: 1;
+  animation: едет 11s linear infinite;
 }
-@keyframes едет { from { left: -12%; } to { left: 106%; } }
+.машина span { display: inline-block; transform: scaleX(-1); animation: трясёт .5s ease-in-out infinite; }
+.машина.встречная { bottom: 2px; font-size: 15px; animation: встречная 15s linear infinite 4s; }
+.машина.встречная span { transform: none; }
+@keyframes едет { from { transform: translateX(-40px); } to { transform: translateX(calc(100cqw + 40px)); } }
+@keyframes встречная { from { transform: translateX(calc(100cqw + 40px)); } to { transform: translateX(-40px); } }
+@keyframes трясёт { 0%,100% { translate: 0 0; } 50% { translate: 0 -1px; } }
+
+/* Жизнь вокруг: прохожие, рабочий на стройке, птицы */
+.тропа { position: absolute; left: 0; right: 0; bottom: 30px; height: 20px; container-type: inline-size; pointer-events: none; }
+.прохожий { position: absolute; left: 0; bottom: 0; font-size: 15px; line-height: 1; }
+.прохожий span { display: inline-block; animation: шаг .45s ease-in-out infinite; }
+.пр1 { animation: идёт 24s linear infinite; }
+.пр1 span { transform: scaleX(-1); }
+.пр2 { animation: идётНазад 31s linear infinite 9s; font-size: 14px; }
+.пр3 { animation: идёт 38s linear infinite 17s; font-size: 13px; }
+.пр3 span { transform: scaleX(-1); }
+@keyframes идёт { from { transform: translateX(-30px); } to { transform: translateX(calc(100cqw + 30px)); } }
+@keyframes идётНазад { from { transform: translateX(calc(100cqw + 30px)); } to { transform: translateX(-30px); } }
+@keyframes шаг { 0%,100% { translate: 0 0; } 50% { translate: 0 -2px; } }
+.рабочий { position: absolute; right: 64px; bottom: 32px; font-size: 15px; line-height: 1; }
+.рабочий .молот { display: inline-block; transform-origin: 20% 80%; animation: стук .9s ease-in-out infinite; }
+@keyframes стук { 0%,60%,100% { transform: rotate(0); } 30% { transform: rotate(-38deg); } }
+.птицы { position: absolute; top: 22px; left: 0; right: 0; height: 20px; container-type: inline-size; }
+.птица { position: absolute; left: 0; font-size: 9px; color: #6E7A70; animation: летит 20s linear infinite 3s; }
+.птица span { display: inline-block; animation: взмах .6s ease-in-out infinite; }
+@keyframes летит { from { transform: translate(-20px, 6px); } 50% { transform: translate(50cqw, -4px); } to { transform: translate(calc(100cqw + 20px), 4px); } }
+@keyframes взмах { 0%,100% { scale: 1 1; } 50% { scale: 1 .45; } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
   .монета { display: none; }
+  .прохожий, .птица, .машина, .рабочий .молот { display: none; }
 }
 </style>
 </head>
@@ -404,8 +441,18 @@ body {
   <div class="облако о2">☁️</div>
   <div class="облако о3">☁️</div>
   <div class="холмы"></div>
+  <div class="птицы" aria-hidden="true"><div class="птица"><span>︶︶</span></div></div>
   <div class="дома" id="дома"></div>
-  <div class="дорога"><div class="разметка"></div><div class="машина" id="машина">🚚</div></div>
+  <div class="рабочий" aria-hidden="true">👷<span class="молот">🔨</span></div>
+  <div class="тропа" aria-hidden="true">
+    <div class="прохожий пр1"><span>🚶</span></div>
+    <div class="прохожий пр2"><span>🚶‍♀️</span></div>
+    <div class="прохожий пр3"><span>🐕</span></div>
+  </div>
+  <div class="дорога"><div class="разметка"></div>
+    <div class="машина" id="машина"><span>🚚</span></div>
+    <div class="машина встречная"><span>🚗</span></div>
+  </div>
 </section>
 
 <section class="табло">
@@ -557,6 +604,11 @@ body {
     { имя: "Доля в базе стройматериалов", знак: "🧱", цена: 1500000, поток: 35000, тип: "актив", открыть: 40000, возни: 1,
       опис: "Ты знаешь этот рынок изнутри. Риск: партнёры и сезон." },
 
+    /* Акции как в настоящей игре: цена скачет каждый месяц, потока нет, раз в год дивиденды.
+       Купил дёшево, продал дорого — вот и весь заработок. Можно докупать. */
+    { имя: "Акции Сбербанка, 100 штук", знак: "📊", цена: 0, поток: 0, тип: "бумага",
+      опис: "Цена меняется каждый месяц. В июле дивиденды, около 11% от цены. Продать можно в любой момент." },
+
     { имя: "Зимняя резина на перепродажу", знак: "🛞", цена: 30000, разовый: 44000, тип: "сделка",
       опис: "Взял летом дёшево, продал к холодам. Месяц лежала в гараже." },
     { имя: "Прицеп под восстановление", знак: "🛠", цена: 60000, разовый: 85000, тип: "сделка",
@@ -618,7 +670,7 @@ body {
     { имя: "Скупает активы", лицо: "🦊", стратегия: "актив" }
   ];
 
-  var ВЕРСИЯ = "6";          // меняется при каждой правке игры
+  var ВЕРСИЯ = "7";          // меняется при каждой правке игры
   var КЛЮЧ = "поток-игра-2";
 
   /* Страница сама проверяет, не вышла ли новая версия, и перезагружается.
@@ -660,6 +712,7 @@ body {
         { имя: "Долг", знак: "🤝", остаток: цифры.ильназОстаток, платёж: 0, ставка: 0 }
       ],
       лог: [], предложения: null, победа: 0, событие: null, минусПодряд: 0, историяИспорчена: false,
+      курс: 300, покупатель: null,
       боты: БОТЫ.map(function (б) {
         return { имя: б.имя, лицо: б.лицо, стратегия: б.стратегия, пассив: 0,
                  расходы: цифры.бытовые, победил: 0 };
@@ -696,9 +749,12 @@ body {
     игра.допПлатежи = (игра.помощник ? 18000 : 0) +
       (игра.куплено.indexOf("Новая машина в кредит") !== -1 ? 18000 : 0);
     if (игра.минусПодряд == null) игра.минусПодряд = 0;
+    if (!игра.курс) игра.курс = 300;
+    if (игра.покупатель === undefined) игра.покупатель = null;
     // Предложенные карточки берём из текущей колоды, а не из старой версии
     if (игра.предложения) игра.предложения = игра.предложения.map(function (п) {
-      return ВОЗМОЖНОСТИ.filter(function (в) { return в.имя === п.имя; })[0];
+      var в = ВОЗМОЖНОСТИ.filter(function (в) { return в.имя === п.имя; })[0];
+      return в && в.тип === "бумага" ? Object.assign({}, в, { цена: п.цена }) : в;
     }).filter(Boolean);
     if (игра.предложения && !игра.предложения.length) игра.предложения = null;
   }
@@ -821,6 +877,26 @@ body {
     игра.наличные -= наПраздники;
     игра.отчёт.праздники = наПраздники;
 
+    // Рынок: цена акций гуляет каждый месяц, в июле дивиденды
+    игра.покупатель = null;
+    игра.курс = Math.max(120, Math.round(игра.курс * (1 + (Math.random() - 0.47) * 0.16)));
+    var пакет = игра.активы.filter(function (а) { return а.бумага; })[0];
+    if (пакет && мКал === 7) {
+      var дивиденды = Math.round(пакет.штук * игра.курс * 0.11 * 0.87);
+      игра.наличные += дивиденды;
+      строки.push("📊 Дивиденды по акциям после налога " + деньги(дивиденды));
+    }
+    // Как в настоящей игре: иногда приходит покупатель на твой актив и даёт больше, чем ты платил
+    var наПродажу = игра.активы.filter(function (а) {
+      return !а.руками && !а.бумага && !а.срок && а.продажа == null;
+    });
+    if (наПродажу.length && Math.random() < 0.12) {
+      var ц = наПродажу[Math.floor(Math.random() * наПродажу.length)];
+      игра.покупатель = { имя: ц.имя, знак: ц.знак,
+                          сумма: Math.round(ц.цена * (1.2 + Math.random() * 0.4) / 1000) * 1000 };
+      строки.push("🤝 Нашёлся покупатель на «" + ц.имя + "», предлагает " + деньги(игра.покупатель.сумма) + ".");
+    }
+
     игра.событие = null;
     if (Math.random() < 0.5) {
       var с = СОБЫТИЯ[Math.floor(Math.random() * СОБЫТИЯ.length)];
@@ -906,6 +982,9 @@ body {
     // Что показывали последние два месяца, в этот раз не показываем
     var свежие = копия.filter(function (в) { return недавние.indexOf(в.имя) === -1; });
     if (свежие.length >= 3) копия = свежие;
+    копия = копия.map(function (в) {
+      return в.тип === "бумага" ? Object.assign({}, в, { цена: 100 * игра.курс }) : в;
+    });
     var выбор = [], ловушек = 0;
     while (выбор.length < 3 && копия.length) {
       var в = копия.splice(Math.floor(Math.random() * копия.length), 1)[0];
@@ -922,7 +1001,14 @@ body {
     if (!в || игра.наличные < в.цена || (в.возни || 0) > свободноВнимания()) return;
     игра.наличные -= в.цена;
 
-    if (в.тип === "сделка") {
+    if (в.тип === "бумага") {
+      var пакет = игра.активы.filter(function (а) { return а.бумага; })[0];
+      if (пакет) { пакет.штук += 100; пакет.цена += в.цена; }
+      else игра.активы.push({ имя: "Акции Сбербанка", знак: в.знак, поток: 0, бумага: true, штук: 100,
+                              цена: в.цена, куплен: игра.месяц, налог: 13 });
+      записать("Купил 100 акций Сбербанка по " + деньги(в.цена / 100) + " за штуку.");
+      сыпануть(6, "📊");
+    } else if (в.тип === "сделка") {
       игра.наличные += в.разовый;
       записать("Сделка «" + в.имя + "»: вложил " + деньги(в.цена) + ", вернулось " + деньги(в.разовый));
       сыпануть(7, "🪙");
@@ -971,16 +1057,61 @@ body {
   function продать(и) {
     var а = игра.активы[и];
     if (!а) return;
+    if (а.бумага) {
+      var выручка = а.штук * игра.курс;
+      игра.активы.splice(и, 1);
+      игра.наличные += выручка;
+      var навар = выручка - а.цена;
+      записать("Продал " + а.штук + " акций по " + деньги(игра.курс) + ": " + деньги(выручка) +
+               (навар >= 0 ? ", заработал " + деньги(навар) : ", потерял " + деньги(-навар)) + ".");
+      сохранить(); нарисовать(); сыпануть(6, навар >= 0 ? "🪙" : "💸"); мигнуть("счёт-наличные");
+      return;
+    }
     var доля = а.продажа != null ? а.продажа : 0.85;
     // Техника дешевеет с каждым месяцем, к концу срока стоит копейки
     if (а.срок) доля *= Math.max(0.15, 1 - (игра.месяц - (а.куплен || игра.месяц)) / а.срок);
     var цена = Math.round((а.цена || 0) * доля / 1000) * 1000;
     игра.активы.splice(и, 1);
     игра.наличные += цена;
+    var долгАктива = закрытьДолгАктива(а);
+    if (долгАктива) записать("Из выручки закрыт долг по «" + а.имя + "»: " + деньги(долгАктива) + ".");
     var м = игра.куплено.indexOf(а.имя);
     if (м !== -1) игра.куплено.splice(м, 1);   // снова появится в колоде
     записать("Продал «" + а.имя + "» за " + деньги(цена) + ", это " + Math.round(цена / (а.цена || 1) * 100) + "% от покупки.");
     сохранить(); нарисовать(); сыпануть(6, "🪙"); мигнуть("счёт-наличные");
+  }
+
+  // Продаёшь актив с ипотекой — из выручки сначала закрывается его долг, как в настоящей игре
+  function закрытьДолгАктива(а) {
+    var снято = 0;
+    игра.долги.forEach(function (д) {
+      if (д.имя === а.имя && д.остаток > 0) { снято += д.остаток; д.остаток = 0; }
+    });
+    игра.наличные -= снято;
+    return снято;
+  }
+
+  function продатьПокупателю(согласен) {
+    var п = игра.покупатель;
+    if (!п) return;
+    игра.покупатель = null;
+    var и = -1;
+    игра.активы.forEach(function (а, к) { if (а.имя === п.имя && и === -1) и = к; });
+    if (!согласен || и === -1) {
+      записать("Отказал покупателю на «" + п.имя + "». Актив остался.");
+    } else {
+      var а = игра.активы[и];
+      игра.активы.splice(и, 1);
+      игра.наличные += п.сумма;
+      var долгАктива = закрытьДолгАктива(а);
+      if (долгАктива) записать("Из выручки закрыт долг по «" + а.имя + "»: " + деньги(долгАктива) + ".");
+      var м = игра.куплено.indexOf(а.имя);
+      if (м !== -1) игра.куплено.splice(м, 1);
+      записать("Продал «" + а.имя + "» покупателю за " + деньги(п.сумма) + ". Купил за " + деньги(а.цена) +
+               ", навар " + деньги(п.сумма - а.цена) + ".");
+      сыпануть(10, "🪙"); мигнуть("счёт-наличные");
+    }
+    сохранить(); нарисовать();
   }
 
   function погасить(и) {
@@ -1062,7 +1193,7 @@ body {
           return '<div class="строка"><span class="лево">' + а.знак + ' <span>' + а.имя + метка +
                  '</span><button class="мини" data-продать="' + и + '">продать</button></span>' +
                  '<span class="право ' + (сейчас ? "плюс" : "") + '">' +
-                 (сейчас ? "+" + деньги(чистыми(а)) : "не сезон") + "</span></div>";
+                 (а.бумага ? а.штук + " шт · " + коротко(а.штук * игра.курс) : сейчас ? "+" + деньги(чистыми(а)) : "не сезон") + "</span></div>";
         }).join("")
       : '<div class="пусто">Пусто. Актив это то, что платит тебе каждый месяц, даже когда ты спишь.</div>';
 
@@ -1146,8 +1277,16 @@ body {
 
   function рисоватьВыбор() {
     var у = document.getElementById("выбор");
-    if (!игра.предложения) { у.innerHTML = ""; return; }
-    var h = '<div class="заголовок-блока">Что сделаешь в этом месяце</div>';
+    var h = "";
+    if (игра.покупатель) {
+      var п = игра.покупатель;
+      h += '<div class="покупатель"><div class="покупатель-текст">' + п.знак + " Покупатель хочет забрать «" +
+           п.имя + "» за <b>" + деньги(п.сумма) + "</b></div>" +
+           '<div class="пара"><button class="кнопка" data-покупатель="1">Продать</button>' +
+           '<button class="кнопка" data-покупатель="0">Оставить себе</button></div></div>';
+    }
+    if (!игра.предложения) { у.innerHTML = h; return; }
+    h += '<div class="заголовок-блока">Что сделаешь в этом месяце</div>';
     игра.предложения.forEach(function (в, и) {
       var рукНадо = в.возни || 0;
       var рукХватает = рукНадо <= свободноВнимания();
@@ -1161,6 +1300,9 @@ body {
       if (в.тип === "актив" && в.поток > 0 && !в.руками) {
         var месяцев = в.сезон ? 5 : 12;
         итог += '<span class="годовых">' + Math.round(чистыми(в) * месяцев / в.цена * 100) + "% годовых</span>";
+      }
+      if (в.тип === "бумага") {
+        итог += '<span class="годовых">сейчас ' + деньги(в.цена / 100) + " за штуку</span>";
       }
       if (в.тип === "сделка") {
         итог += '<span class="годовых">навар ' + Math.round((в.разовый - в.цена) / в.цена * 100) + "%</span>";
@@ -1216,6 +1358,9 @@ body {
     }
 
     if (e.target.id === "занять") { занятьВБанке(); return; }
+
+    var пк = e.target.closest("[data-покупатель]");
+    if (пк) { продатьПокупателю(пк.getAttribute("data-покупатель") === "1"); return; }
 
     var пр = e.target.closest("[data-продать]");
     if (пр) { продать(+пр.getAttribute("data-продать")); return; }
