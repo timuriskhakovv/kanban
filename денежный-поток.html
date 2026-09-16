@@ -596,7 +596,25 @@ body {
     { имя: "Скупает активы", лицо: "🦊", стратегия: "актив" }
   ];
 
+  var ВЕРСИЯ = "1";          // меняется при каждой правке игры
   var КЛЮЧ = "поток-игра-2";
+
+  /* Страница сама проверяет, не вышла ли новая версия, и перезагружается.
+     Ссылка всегда одна и та же, хвосты вида ?7 больше не нужны. */
+  function проверитьВерсию() {
+    fetch("версия.txt?t=" + Date.now(), { cache: "no-store" })
+      .then(function (о) { return о.ok ? о.text() : null; })
+      .then(function (т) {
+        if (!т) return;
+        var свежая = т.trim();
+        if (свежая && свежая !== ВЕРСИЯ) location.replace(location.pathname + "?v=" + свежая);
+      })
+      .catch(function () {});
+  }
+  проверитьВерсию();
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden) проверитьВерсию();
+  });
   var игра = null;
 
   function деньги(n) {
