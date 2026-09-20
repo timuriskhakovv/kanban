@@ -1,0 +1,489 @@
+<title>Тимур Исхаков</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;600;800;900&family=Oswald:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#0A0B0D;--bg-2:#131518;--bg-3:#1B1E22;
+  --ink:#F4F4F1;--ink-2:#9CA0A6;--line:rgba(244,244,241,.14);
+  --accent:#FFE27A;--glass:rgba(10,11,13,.72);
+  --st-green:#BFE3A6;--st-yellow:#FFE27A;--st-pink:#F9B9C9;--st-blue:#AFCDF5;--st-orange:#FFC99A;
+  --st-ink:#141517;
+  --ease:cubic-bezier(.23,1,.32,1);
+  --display:"Oswald",Impact,sans-serif;
+  --body:"Onest",-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:1.0625rem;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:clamp(16px,4vw,44px)}
+.narrow{max-width:700px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:8px}
+.kicker{font-family:var(--mono);font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 18px}
+.dim{color:var(--ink-2)}
+p{margin:0 0 1em}
+
+/* полоса прогресса */
+.bar{position:fixed;top:0;left:0;height:3px;width:100%;transform:scaleX(0);transform-origin:0 50%;background:linear-gradient(90deg,var(--accent),#FFB85C);z-index:60;will-change:transform}
+
+/* nav */
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;background:var(--glass);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:54px}
+.brand{font-family:var(--display);font-weight:600;text-transform:uppercase;font-size:1rem;text-decoration:none}
+.brand span{font-family:var(--body);font-weight:300;text-transform:none;color:var(--ink-2);font-size:.9rem}
+.btn{display:inline-flex;align-items:center;gap:.5rem;min-height:48px;padding:.75rem 1.4rem;border-radius:999px;font-weight:600;font-size:1rem;text-decoration:none;border:0;cursor:pointer;font-family:inherit;transition:transform 140ms var(--ease),background-color 220ms ease,box-shadow 220ms ease}
+.btn:active{transform:scale(.97)}
+.btn-p{background:var(--accent);color:#0A0B0D}
+.btn-g{color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.btn-s{min-height:36px;padding:.4rem 1rem;font-size:.85rem}
+.btn svg{width:18px;height:18px}
+@media (hover:hover) and (pointer:fine){
+  .btn-p:hover{background:#FFF0AE;box-shadow:0 12px 30px -12px rgba(255,226,122,.6)}
+  .btn-g:hover{background:var(--bg-2)}
+}
+
+/* hero */
+.hero{position:relative;padding-block:clamp(52px,9vw,110px) clamp(24px,4vw,44px);overflow:hidden}
+.glow{position:absolute;left:50%;top:-28%;width:120%;height:86%;transform:translate3d(-50%,0,0);background:radial-gradient(52% 58% at 50% 0%,rgba(255,226,122,.18),transparent 72%);pointer-events:none;will-change:transform}
+h1{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:clamp(2.9rem,12.4vw,9.6rem);line-height:.85;margin:0;position:relative}
+h1 .ln{display:block;overflow:hidden}
+h1 .ln i{display:block;font-style:normal;transform:translateY(106%);animation:rise 950ms var(--ease) both}
+h1 .ln:nth-child(2) i{animation-delay:130ms}
+h1 .out{color:transparent;-webkit-text-stroke:1.6px var(--ink)}
+@keyframes rise{to{transform:none}}
+.sub{font-weight:300;font-size:clamp(1.08rem,2vw,1.42rem);line-height:1.42;color:var(--ink-2);max-width:42ch;margin:26px 0 0}
+.sub b{color:var(--ink);font-weight:600}
+.row{display:flex;flex-wrap:wrap;gap:12px;margin-top:32px}
+.hero .kicker,.hero .sub,.hero .row{animation:up 820ms var(--ease) both}
+.hero .kicker{animation-delay:60ms}.hero .sub{animation-delay:360ms}.hero .row{animation-delay:460ms}
+@keyframes up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+
+/* бегущая строка */
+.marquee{margin-top:clamp(28px,5vw,52px);border-block:1px solid var(--line);overflow:hidden;padding-block:12px}
+.marquee .track{display:flex;gap:44px;width:max-content;font-family:var(--mono);font-size:.76rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);will-change:transform}
+.marquee b{color:var(--accent);font-weight:500}
+
+/* липкая сцена: хаос → доска */
+.flow{position:relative;height:235vh}
+.stage{position:sticky;top:calc(54px + env(safe-area-inset-top,0px));height:calc(100svh - 54px - env(safe-area-inset-top,0px));display:flex;flex-direction:column;justify-content:center;overflow:hidden}
+.stage h2{margin:0 0 18px}
+.stage .hint{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin:0 0 20px;min-height:1.2em}
+.field{position:relative}
+.live{background:var(--bg-2);border-radius:26px;padding:clamp(12px,2vw,20px);box-shadow:inset 0 0 0 1px var(--line)}
+.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(8px,1.4vw,14px);align-items:start}
+.col{background:var(--bg-3);border-radius:18px;padding:12px;display:flex;flex-direction:column;gap:10px;min-height:44vh;transition:box-shadow 300ms ease}
+.col.hot{box-shadow:inset 0 0 0 1px rgba(255,226,122,.5)}
+.ch{font-family:var(--mono);font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);display:flex;justify-content:space-between;gap:10px;padding:0 2px 8px;border-bottom:1px solid var(--line)}
+.card{position:relative;width:100%;background:var(--c);color:var(--st-ink);border-radius:6px;padding:12px 12px 14px;font-size:.86rem;font-weight:700;line-height:1.26;box-shadow:0 22px 40px -22px rgba(0,0,0,.95);will-change:transform;z-index:3}
+.card small{display:block;margin-top:8px;font-family:var(--mono);font-size:.6rem;font-weight:500;letter-spacing:.05em;text-transform:uppercase;opacity:.55}
+.card .done-mark{position:absolute;right:10px;top:10px;width:13px;height:7px;border-left:2.4px solid var(--st-ink);border-bottom:2.4px solid var(--st-ink);transform:rotate(-45deg);opacity:0;transition:opacity 300ms ease}
+.card.done .done-mark{opacity:.7}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:16px;font-size:.8rem;color:var(--ink-2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--c);margin-right:6px;vertical-align:-1px}
+
+/* секции */
+section{padding-block:clamp(56px,9vw,112px);position:relative}
+.rule{border-top:1px solid var(--line)}
+h2{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:clamp(2rem,6vw,4.2rem);line-height:.92;margin:0 0 24px;text-wrap:balance}
+h2 .w{display:inline-block;vertical-align:bottom}
+h2 .w i{display:inline-block;font-style:normal;opacity:.14;transform:translateY(8px);will-change:opacity,transform}
+.no-js h2 .w i{opacity:1;transform:none}
+h3{font-family:var(--display);text-transform:uppercase;font-weight:600}
+.big{font-size:clamp(1.12rem,2.2vw,1.42rem);line-height:1.45;font-weight:300;color:var(--ink-2)}
+.big b{color:var(--ink);font-weight:600}
+.fade{opacity:0;transform:translateY(24px);transition:opacity 700ms var(--ease),transform 700ms var(--ease)}
+.in .fade{opacity:1;transform:none}
+.in .fade.d1{transition-delay:90ms}.in .fade.d2{transition-delay:180ms}.in .fade.d3{transition-delay:270ms}
+
+.voices{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,238px),1fr));gap:12px;margin-top:38px}
+.voice{background:var(--bg-2);border-radius:18px;padding:24px 22px;font-size:1.05rem;line-height:1.38;box-shadow:inset 0 0 0 1px var(--line);opacity:0;transform:translateY(26px) rotate(var(--vr,0deg));transition:opacity 620ms var(--ease),transform 620ms var(--ease);transition-delay:var(--vd)}
+.in .voice{opacity:1;transform:rotate(var(--vr,0deg))}
+@media (hover:hover) and (pointer:fine){.voice{will-change:transform}.voice:hover{transform:translateY(-5px) rotate(var(--vr,0deg))}}
+
+.steps{list-style:none;padding:0;margin:40px 0 0;counter-reset:s;position:relative}
+.steps::before{content:"";position:absolute;left:.3rem;top:0;bottom:0;width:2px;background:var(--line)}
+.steps::after{content:"";position:absolute;left:.3rem;top:0;width:2px;height:100%;background:var(--accent);transform:scaleY(var(--fill,0));transform-origin:50% 0;will-change:transform}
+.steps li{display:grid;grid-template-columns:3.6rem 1fr;gap:2px 18px;padding:24px 0;border-top:1px solid var(--line);counter-increment:s;opacity:.4;transform:translateX(10px);transition:opacity 420ms ease,transform 520ms var(--ease)}
+.steps li:last-child{border-bottom:1px solid var(--line)}
+.steps li.on{opacity:1;transform:none}
+.steps li::before{content:"0" counter(s);grid-row:span 2;justify-self:end;font-family:var(--display);font-weight:700;font-size:1.9rem;line-height:1;color:var(--ink-2);position:relative;z-index:2;transform-origin:100% 50%;transition:color 380ms ease,transform 420ms var(--ease)}
+.steps li.on::before{color:var(--accent);transform:scale(1.16)}
+.steps h3{margin:0;font-size:1.22rem}
+.steps p{margin:0;color:var(--ink-2)}
+.src{margin-top:18px;font-size:.88rem;color:var(--ink-2)}
+
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:12px;margin-top:38px}
+.fact{border-radius:22px;padding:26px;background:var(--bg-2);box-shadow:inset 0 0 0 1px var(--line);will-change:transform}
+.fact .from{font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.fact .num{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:clamp(1.7rem,3.6vw,2.4rem);line-height:1.05;margin:10px 0;color:var(--accent);font-variant-numeric:tabular-nums}
+.fact p{margin:0;color:var(--ink-2)}
+
+.reviews{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:12px;margin-top:38px}
+.review{margin:0;border-radius:24px;padding:clamp(24px,4vw,44px);background:linear-gradient(180deg,rgba(255,226,122,.1),rgba(255,226,122,.02));box-shadow:inset 0 0 0 1px rgba(255,226,122,.28)}
+.review blockquote{margin:0;font-size:clamp(1.12rem,2.1vw,1.38rem);line-height:1.5;font-weight:300}
+.review blockquote b{font-weight:600}
+.review figcaption{margin-top:18px;font-size:.9rem;color:var(--ink-2)}
+
+.format{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px;margin-top:38px}
+.card2{border-radius:24px;padding:30px;box-shadow:inset 0 0 0 1px var(--line);background:var(--bg-2)}
+.card2.lead{background:var(--accent);color:#0A0B0D;box-shadow:none}
+.card2 .tag{font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;opacity:.7}
+.card2 h3{font-size:1.6rem;margin:12px 0 14px;line-height:1.05}
+.card2 ul{margin:0;padding-left:1.1em}
+.card2 li{margin:.35em 0}
+.card2 .note{margin:18px 0 0;font-size:.92rem;opacity:.72}
+
+.final{text-align:center;overflow:hidden}
+.final .glow2{position:absolute;left:50%;bottom:-45%;width:110%;height:85%;transform:translateX(-50%);background:radial-gradient(50% 50% at 50% 100%,rgba(255,226,122,.18),transparent 70%);pointer-events:none}
+.final h2{font-size:clamp(2.4rem,9vw,6.4rem)}
+.final .big{max-width:34ch;margin-inline:auto}
+.final .row{justify-content:center}
+
+footer{padding-block:30px 46px;border-top:1px solid var(--line);font-size:.85rem;color:var(--ink-2)}
+footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between}
+
+@media(max-width:760px){
+  .flow{height:215vh}
+  .col{min-height:34vh;padding:8px}
+  .card{font-size:.74rem;padding:9px 9px 11px;border-radius:5px}
+  .card small{font-size:.54rem;margin-top:6px}
+  .cols{gap:6px}
+  .ch{font-size:.58rem;gap:6px}
+  .steps li{grid-template-columns:2.6rem 1fr}
+  .steps::before,.steps::after{left:.22rem}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  h1 .ln i,.hero .kicker,.hero .sub,.hero .row{animation:none;transform:none;opacity:1}
+  h2 .w i{transform:none;transition:none}
+  .fade,.voice{opacity:1;transform:none;transition:none}
+  .steps li{opacity:1;transform:none}
+  .marquee .track{transform:none!important}
+}
+</style>
+
+<div class="bar" id="bar" aria-hidden="true"></div>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top">Тимур Исхаков <span>· порядок в голове</span></a>
+    <a class="btn btn-p btn-s" href="https://ig.me/m/timuriskhakovv" target="_blank" rel="noopener">Разбор</a>
+  </div>
+</header>
+
+<main id="top">
+  <div class="hero">
+    <div class="glow" id="glow" aria-hidden="true"></div>
+    <div class="wrap">
+      <p class="kicker">Хаос → доска → сделано</p>
+      <h1><span class="ln"><i>Голова</i></span><span class="ln"><i class="out">не помойка.</i></span></h1>
+      <p class="sub">Сорок дел в голове весят больше, чем сорок дел на доске. <b>Разгружаю за один вечер</b> — дальше вы управляете днём, а не он вами.</p>
+      <div class="row">
+        <a class="btn btn-p" href="https://ig.me/m/timuriskhakovv" target="_blank" rel="noopener">Разбор бесплатно</a>
+        <a class="btn btn-g" href="#how">Смотреть метод</a>
+      </div>
+    </div>
+    <div class="marquee" aria-hidden="true">
+      <div class="track" id="track"></div>
+    </div>
+  </div>
+
+  <!-- липкая сцена -->
+  <div class="flow" id="flow">
+    <div class="stage">
+      <div class="wrap">
+        <h2 id="stageTitle">Сорок дел. Одна голова.</h2>
+        <p class="hint" id="stageHint">Листайте — разложим</p>
+        <div class="field" id="field">
+          <div class="live">
+            <div class="cols" id="cols">
+              <div class="col" data-col="0"><div class="ch"><span>Нужно сделать</span><span class="cnt">0</span></div></div>
+              <div class="col" data-col="1"><div class="ch"><span>Сегодня</span><span class="cnt">0</span></div></div>
+              <div class="col" data-col="2"><div class="ch"><span>Сделано</span><span class="cnt">0</span></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="legend" aria-hidden="true">
+          <span><i style="--c:var(--st-green)"></i>развитие</span>
+          <span><i style="--c:var(--st-yellow)"></i>бизнес</span>
+          <span><i style="--c:var(--st-pink)"></i>семья</span>
+          <span><i style="--c:var(--st-blue)"></i>общество</span>
+          <span><i style="--c:var(--st-orange)"></i>хобби</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="rule watch">
+    <div class="wrap narrow">
+      <h2 data-split>Не коуч. Обычный мужик, который тонул в делах и долгах.</h2>
+      <p class="big fade d1">Я работаю в продажах и параллельно строю своё дело. Какое-то время жил одним днём: долг не закрывался, дела висели месяцами, и я не понимал, чего хочу от жизни.</p>
+      <p class="big fade d2">Выбрался не мотивацией, а <b>доской и цифрами</b>. Теперь помогаю тем, кто сейчас там, где был я. Иду рядом, на полшага впереди.</p>
+    </div>
+  </section>
+
+  <section class="rule watch">
+    <div class="wrap">
+      <div class="narrow">
+        <h2 data-split>Узнаёте себя?</h2>
+        <p class="big fade d1">Так говорят люди, которые приходят на разбор. Слово в слово.</p>
+      </div>
+      <div class="voices">
+        <div class="voice" style="--vd:120ms;--vr:-.6deg">«В моменте стало легче, но оно опять вернулось».</div>
+        <div class="voice" style="--vd:200ms;--vr:.5deg">«Я не могу вести задачник».</div>
+        <div class="voice" style="--vd:280ms;--vr:-.4deg">«Пока делаю задачу, уже забыла, кому что отправляла».</div>
+        <div class="voice" style="--vd:360ms;--vr:.7deg">«Занести в табличку никак не могу себя заставить».</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="rule watch" id="how">
+    <div class="wrap narrow">
+      <h2 data-split>Как навожу порядок</h2>
+      <p class="big fade d1">Пять шагов. Каждый делаю руками, на ваших делах, а не на примерах из книжки.</p>
+      <ol class="steps" id="steps">
+        <li><h3>Выгрузка из головы</h3><p>Каждое дело, мысль и обещание — на отдельную карточку. Голова освобождается уже на этом шаге.</p></li>
+        <li><h3>Отсев чужого</h3><p>Что правда ваше, а что тащите, потому что «надо». Лишнее уходит с доски.</p></li>
+        <li><h3>Доска</h3><p>Год, месяц, сегодня. Цвет карточки — сфера жизни: сразу видно, где перекос.</p></li>
+        <li><h3>Дробление до первого шага</h3><p>Не «сделать отчёт», а «открыть файл и внести первую неделю». Понятно, с чего начать прямо сейчас.</p></li>
+        <li><h3>Управление сегодняшним днём</h3><p>Не надо планировать на пять лет. Узкое горлышко — сегодня. Вечером отмечаете, что сделано.</p></li>
+      </ol>
+      <p class="src fade d1">В основе — кайдзен-планирование Маргулана Сейсембая, проверенное на моей собственной жизни.</p>
+    </div>
+  </section>
+
+  <section class="rule watch">
+    <div class="wrap">
+      <div class="narrow"><h2 data-split>Работает на обычных делах</h2></div>
+      <div class="facts">
+        <div class="fact fade d1"><div class="from">Мой отчёт по продажам</div><div class="num">4 месяца → 1 вечер</div><p>Висел с весны. Три вопроса к задаче: нужна ли она, можно ли поручить, если нет — сделать. Сделал за вечер.</p></div>
+        <div class="fact fade d2"><div class="from">Моё дело «загранпаспорт»</div><div class="num">Переносил день за днём</div><p>Разбил на мелкие шаги: съездить, узнать, собрать документы. Паспорт на руках.</p></div>
+      </div>
+      <div class="reviews">
+      <figure class="review fade d3">
+        <blockquote>«Ты вернул мне момент „сегодня“, здесь и сейчас. Обработал ключевое возражение по планированию — скорее всего, оно мне и не давало шагнуть в списки задач: <b>не нужно планировать на пять лет вперёд, а чётко на сегодня распределять задачи.</b> И ещё запомнился момент с рефлексией. В моменте стало приятно и легче!»</blockquote>
+        <figcaption>Мария, после бесплатного разбора</figcaption>
+      </figure>
+      <figure class="review fade d3">
+        <blockquote>«Как истинный человек с СДВГ, я до этого толком ничего не доделывал: доску сделал, общие цели написал, а на мелкие не раздробил. Последние три дня допилил доску, расписал цели на мелкие-мелкие задачи и начал их переставлять. <b>И вот оно: тревоги нет, дело делается.</b> Ощущение, что ничего не забылось и ничего не пропадёт. Из хаоса наконец получается порядок».</blockquote>
+        <figcaption>Арслан, через два месяца после работы</figcaption>
+      </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="rule watch">
+    <div class="wrap">
+      <div class="narrow"><h2 data-split>Как проходит работа</h2></div>
+      <div class="format">
+        <div class="card2 lead fade d1">
+          <div class="tag">Начало · бесплатно</div>
+          <h3>Разбор, 40 минут</h3>
+          <ul><li>Созвон в Zoom</li><li>Беру одну вашу задачу, которая висит</li><li>Раскладываю её на шаги прямо на созвоне</li></ul>
+          <p class="note">Уходите с первым шагом, который можно сделать сегодня.</p>
+        </div>
+        <div class="card2 fade d2">
+          <div class="tag">Дальше · если подходим друг другу</div>
+          <h3>Один на один, 4 недели</h3>
+          <ul><li>Первая встреча — два часа: выгрузка и доска</li><li>Дальше встречи по часу</li><li>Разбираю вашу неделю по фактам</li></ul>
+          <p class="note">Условия обсуждаем на разборе.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="rule final watch">
+    <div class="glow2" aria-hidden="true"></div>
+    <div class="wrap">
+      <h2 data-split>Напишите «разбор».</h2>
+      <p class="big fade d1">В директ Инстаграма. Отвечу сам и договоримся о времени.</p>
+      <div class="row fade d2">
+        <a class="btn btn-p" id="magnet" href="https://ig.me/m/timuriskhakovv" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".6" fill="currentColor"/></svg>
+          Написать в директ
+        </a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Тимур Исхаков · Казань</span>
+    <a href="https://www.instagram.com/timuriskhakovv/" target="_blank" rel="noopener">@timuriskhakovv</a>
+  </div>
+</footer>
+
+<script>
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const clamp = (v,a=0,b=1) => Math.min(b, Math.max(a, v));
+const easeOut = t => 1 - Math.pow(1 - t, 3);
+
+/* ---------- заголовки по словам ---------- */
+document.querySelectorAll('h2[data-split]').forEach(h => {
+  h.setAttribute('data-lit','');
+  const words = h.textContent.trim().split(' ');
+  h.textContent = '';
+  words.forEach((w,i) => {
+    const s = document.createElement('span');
+    s.className = 'w'; s.style.setProperty('--wd', (i*45)+'ms');
+    const it = document.createElement('i'); it.textContent = w;
+    s.appendChild(it); h.appendChild(s);
+    h.appendChild(document.createTextNode(' '));
+  });
+});
+
+/* ---------- слова заголовков выходят из темноты ---------- */
+const lines = [...document.querySelectorAll('h2[data-lit]')];
+
+/* ---------- появление секций ---------- */
+const io = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }), {rootMargin:'0px 0px -14% 0px'});
+document.querySelectorAll('.watch').forEach(el => io.observe(el));
+
+/* ---------- бегущая строка ---------- */
+const track = document.getElementById('track');
+const words = ['40+ дел в голове','<b>·</b>','6 часов вместо 12','<b>·</b>','1 шаг на сегодня','<b>·</b>','узкое горлышко — сегодня','<b>·</b>'];
+track.innerHTML = '';
+for(let k=0;k<3;k++) words.forEach(w => { const s = document.createElement('span'); s.innerHTML = w; track.appendChild(s); });
+
+/* ---------- липкая сцена ---------- */
+const CARDS = [
+  {col:0, text:'Отчёт по продажам за четыре месяца', tag:'бизнес', c:'var(--st-yellow)', x:-.34, y:-.30, r:-9},
+  {col:0, text:'Погулять с сыном без телефона',      tag:'семья',  c:'var(--st-pink)',   x:.30,  y:-.36, r:7},
+  {col:0, text:'Двадцать минут книги',               tag:'развитие',c:'var(--st-green)', x:-.12, y:.34,  r:-5},
+  {col:1, text:'Открыть файл отчёта и внести первую неделю', tag:'бизнес · шаг 1', c:'var(--st-yellow)', x:.36, y:.22, r:11},
+  {col:1, text:'Позвонить подрядчику',               tag:'общество',c:'var(--st-blue)',  x:-.40, y:.10,  r:6},
+  {col:2, text:'Загранпаспорт',                      tag:'общество',c:'var(--st-blue)',  x:.14,  y:-.14, r:-12, done:true},
+  {col:2, text:'Выгрузить всё из головы на карточки',tag:'развитие',c:'var(--st-green)', x:.05,  y:.40,  r:9, done:true},
+];
+const field = document.getElementById('field');
+const cols = [...document.querySelectorAll('#cols .col')];
+const stageHint = document.getElementById('stageHint');
+const stageTitle = document.getElementById('stageTitle');
+const flow = document.getElementById('flow');
+
+const els = CARDS.map((c,i) => {
+  const el = document.createElement('div');
+  el.className = 'card' + (c.done ? ' done' : '');
+  el.style.setProperty('--c', c.c);
+  el.innerHTML = '<span class="txt"></span><small></small><span class="done-mark"></span>';
+  el.querySelector('.txt').textContent = c.text;
+  el.querySelector('small').textContent = c.tag;
+  cols[c.col].appendChild(el);
+  return {el, cfg:c};
+});
+
+function measure(){
+  const fr = field.getBoundingClientRect();
+  els.forEach(o => {
+    o.el.style.transform = 'none';
+    const r = o.el.getBoundingClientRect();
+    /* точка хаоса — от центра поля, куда карточка «прилетает» из головы */
+    o.dx = (fr.width/2 - r.width/2 + o.cfg.x*fr.width) - (r.left - fr.left);
+    o.dy = (fr.height/2 - r.height/2 + o.cfg.y*fr.height) - (r.top - fr.top);
+  });
+}
+
+let lastCounts = [-1,-1,-1];
+function renderFlow(p){
+  let counts = [0,0,0], hot = [false,false,false];
+  els.forEach((o,i) => {
+    const t = easeOut(clamp((p - i*0.05) / 0.44));
+    const k = 1 - t;
+    o.el.style.transform = `translate3d(${(o.dx*k).toFixed(1)}px, ${(o.dy*k).toFixed(1)}px, 0) rotate(${(o.cfg.r*k).toFixed(2)}deg) scale(${(1 + 0.06*k).toFixed(3)})`;
+    o.el.style.zIndex = k > 0.02 ? 5 : 1;
+    if(t > .6) counts[o.cfg.col]++;
+    if(t > .05 && t < .97) hot[o.cfg.col] = true;
+  });
+  cols.forEach((c,i) => c.classList.toggle('hot', hot[i]));
+  counts.forEach((c,i) => { if(c !== lastCounts[i]){ cols[i].querySelector('.cnt').textContent = c; lastCounts[i] = c; } });
+  stageTitle.textContent = p > .72 ? 'Всё на доске.' : (p > .22 ? 'Раскладываю.' : 'Сорок дел. Одна голова.');
+  stageHint.textContent = p > .72 ? 'Дальше — один шаг на сегодня' : 'Листайте — разложим';
+}
+
+/* ---------- общий цикл прокрутки ---------- */
+const bar = document.getElementById('bar');
+const glow = document.getElementById('glow');
+const steps = [...document.querySelectorAll('#steps li')];
+const stepsEl = document.getElementById('steps');
+const facts = [...document.querySelectorAll('.fact')];
+let mx = 0, my = 0, tx = 0, ty = 0, marq = 0, lastY = scrollY, vel = 0, fillNow = 0;
+
+addEventListener('pointermove', e => { if(e.pointerType !== 'mouse') return; mx = (e.clientX/innerWidth - .5)*2; my = (e.clientY/innerHeight - .5)*2; }, {passive:true});
+addEventListener('resize', measure);
+
+function tick(ts){
+  const y = scrollY;
+  vel = vel*0.8 + (y - lastY)*0.2; lastY = y;
+  const docH = document.documentElement.scrollHeight - innerHeight;
+  bar.style.transform = `scaleX(${clamp(y/Math.max(1,docH))})`;
+
+  /* сцена */
+  const fr = flow.getBoundingClientRect();
+  const p = clamp((-fr.top) / Math.max(1, flow.offsetHeight - innerHeight));
+  renderFlow(p);
+
+  /* свечение в герое едет медленнее прокрутки */
+  glow.style.transform = `translate3d(-50%, ${(y*0.25).toFixed(1)}px, 0)`;
+
+  /* бегущая строка: базовая скорость + скорость прокрутки */
+  marq -= 0.45 + vel*0.05;
+  const half = track.scrollWidth/3;
+  if(half && marq <= -half) marq += half;
+  if(half && marq > 0) marq -= half;
+  track.style.transform = `translate3d(${marq.toFixed(1)}px,0,0)`;
+
+  /* карточки фактов слегка следуют за мышью */
+  tx += (mx - tx)*0.06; ty += (my - ty)*0.06;
+  facts.forEach((f,i) => { const d = (i%2 ? 1 : -1) * 4; f.style.transform = `translate3d(${(tx*d).toFixed(1)}px, ${(ty*d).toFixed(1)}px, 0)`; });
+
+  /* заголовки: слова выходят из темноты по мере подхода к центру */
+  lines.forEach(h => {
+    const r = h.getBoundingClientRect();
+    if(r.bottom < -80 || r.top > innerHeight + 80) return;
+    const prog = clamp((innerHeight*0.86 - r.top) / (r.height + innerHeight*0.30));
+    const ws = h.__ws || (h.__ws = [...h.querySelectorAll('.w i')]);
+    ws.forEach((w,i) => {
+      const lit = clamp((prog - i*0.055) / 0.26);
+      w.style.opacity = (0.14 + 0.86*lit).toFixed(3);
+      w.style.transform = `translateY(${((1-lit)*8).toFixed(1)}px)`;
+    });
+  });
+
+  /* шаги метода: линия наливается, активный подсвечен */
+  if(steps.length){
+    const sr = stepsEl.getBoundingClientRect();
+    const fill = clamp((innerHeight*0.62 - sr.top) / sr.height);
+    fillNow += (fill - fillNow) * 0.16;
+    stepsEl.style.setProperty('--fill', fillNow.toFixed(4));
+    let best = null, bd = 1e9;
+    steps.forEach(li => { const r = li.getBoundingClientRect(); const d = Math.abs(r.top + r.height/2 - innerHeight*0.55); if(d < bd){ bd = d; best = li; } });
+    steps.forEach(li => li.classList.toggle('on', li === best && bd < innerHeight*0.45));
+  }
+  requestAnimationFrame(tick);
+}
+
+/* ---------- магнитная кнопка ---------- */
+const magnet = document.getElementById('magnet');
+if(magnet && !reduce && matchMedia('(hover:hover)').matches){
+  magnet.addEventListener('pointermove', e => {
+    const r = magnet.getBoundingClientRect();
+    const dx = (e.clientX - (r.left + r.width/2)) * .25;
+    const dy = (e.clientY - (r.top + r.height/2)) * .35;
+    magnet.style.transform = `translate(${dx}px, ${dy}px)`;
+  });
+  magnet.addEventListener('pointerleave', () => { magnet.style.transition = 'transform 420ms var(--ease)'; magnet.style.transform = 'none'; setTimeout(() => magnet.style.transition = '', 440); });
+}
+
+measure();
+addEventListener('load', measure);
+if(document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
+new ResizeObserver(() => measure()).observe(document.querySelector('.live'));
+if(reduce){
+  renderFlow(1);
+  document.querySelectorAll('h2 .w i').forEach(w => { w.style.opacity = 1; w.style.transform = 'none'; });
+} else { requestAnimationFrame(tick); }
+</script>
