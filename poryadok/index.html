@@ -73,7 +73,9 @@ h1 .out{color:transparent;-webkit-text-stroke:1.6px var(--ink)}
 .stage .hint{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin:0 0 20px;min-height:1.2em}
 .field{position:relative}
 .live{background:var(--bg-2);border-radius:26px;padding:clamp(12px,2vw,20px);box-shadow:inset 0 0 0 1px var(--line)}
-.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(8px,1.4vw,14px);align-items:start}
+.colhead{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(8px,1.4vw,14px)}
+.chx{font-family:var(--mono);font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);display:flex;justify-content:space-between;gap:10px;padding:0 4px 10px;border-bottom:1px solid var(--line)}
+#scene{display:block;width:100%;height:min(58vh,520px);touch-action:pan-y}
 .col{perspective:1600px;background:var(--bg-3);border-radius:18px;padding:12px;display:flex;flex-direction:column;gap:10px;min-height:44vh;transition:box-shadow 300ms ease}
 .col.hot{box-shadow:inset 0 0 0 1px rgba(255,226,122,.5)}
 .ch{font-family:var(--mono);font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);display:flex;justify-content:space-between;gap:10px;padding:0 2px 8px;border-bottom:1px solid var(--line)}
@@ -200,11 +202,12 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
         <p class="hint" id="stageHint">Листайте — разложим</p>
         <div class="field" id="field">
           <div class="live">
-            <div class="cols" id="cols">
-              <div class="col" data-col="0"><div class="ch"><span>Нужно сделать</span><span class="cnt">0</span></div></div>
-              <div class="col" data-col="1"><div class="ch"><span>Сегодня</span><span class="cnt">0</span></div></div>
-              <div class="col" data-col="2"><div class="ch"><span>Сделано</span><span class="cnt">0</span></div></div>
+            <div class="colhead">
+              <div class="chx"><span>Нужно сделать</span><span class="cnt" data-c="0">0</span></div>
+              <div class="chx"><span>Сегодня</span><span class="cnt" data-c="1">0</span></div>
+              <div class="chx"><span>Сделано</span><span class="cnt" data-c="2">0</span></div>
             </div>
+            <canvas id="scene" aria-label="Карточки дел, которые складываются в доску"></canvas>
           </div>
         </div>
         <div class="legend" aria-hidden="true">
@@ -352,66 +355,175 @@ for(let k=0;k<3;k++) words.forEach(w => { const s = document.createElement('span
 
 /* ---------- липкая сцена ---------- */
 const CARDS = [
-  {col:0, text:'Отчёт по продажам за четыре месяца', tag:'бизнес', c:'var(--st-yellow)', x:-.34, y:-.30, r:-9, z:190, rx:-13, ry:15},
-  {col:0, text:'Погулять с сыном без телефона',      tag:'семья',  c:'var(--st-pink)',   x:.30,  y:-.36, r:7,  z:130, rx:10,  ry:-14},
-  {col:0, text:'Двадцать минут книги',               tag:'развитие',c:'var(--st-green)', x:-.12, y:.34,  r:-5, z:200, rx:-8, ry:10},
-  {col:1, text:'Открыть файл отчёта и внести первую неделю', tag:'бизнес · шаг 1', c:'var(--st-yellow)', x:.36, y:.22, r:11, z:160, rx:14, ry:-10},
-  {col:1, text:'Позвонить подрядчику',               tag:'общество',c:'var(--st-blue)',  x:-.40, y:.10,  r:6,  z:110, rx:-12, ry:-13},
-  {col:2, text:'Загранпаспорт',                      tag:'общество',c:'var(--st-blue)',  x:.14,  y:-.14, r:-12, z:175, rx:9,  ry:12, done:true},
-  {col:2, text:'Выгрузить всё из головы на карточки',tag:'развитие',c:'var(--st-green)', x:.05,  y:.40,  r:9,  z:120, rx:-10, ry:-8, done:true},
+  {col:0, text:'Отчёт по продажам за четыре месяца', tag:'бизнес',       c:0xFFE27A},
+  {col:0, text:'Погулять с сыном без телефона',      tag:'семья',        c:0xF9B9C9},
+  {col:0, text:'Двадцать минут книги',               tag:'развитие',     c:0xBFE3A6},
+  {col:1, text:'Открыть файл отчёта и внести первую неделю', tag:'бизнес · шаг 1', c:0xFFE27A},
+  {col:1, text:'Позвонить подрядчику',               tag:'общество',     c:0xAFCDF5},
+  {col:2, text:'Загранпаспорт',                      tag:'общество',     c:0xAFCDF5, done:true},
+  {col:2, text:'Выгрузить всё из головы на карточки',tag:'развитие',     c:0xBFE3A6, done:true},
 ];
-const field = document.getElementById('field');
-const cols = [...document.querySelectorAll('#cols .col')];
+
+const canvas = document.getElementById('scene');
 const stageHint = document.getElementById('stageHint');
 const stageTitle = document.getElementById('stageTitle');
 const flow = document.getElementById('flow');
+const counters = [...document.querySelectorAll('.cnt')];
+let renderFlow = () => {};          /* заменится, когда сцена соберётся */
 
-const els = CARDS.map((c,i) => {
-  const el = document.createElement('div');
-  el.className = 'card' + (c.done ? ' done' : '');
-  el.style.setProperty('--c', c.c);
-  el.innerHTML = '<span class="txt"></span><small></small><span class="done-mark"></span>';
-  el.querySelector('.txt').textContent = c.text;
-  el.querySelector('small').textContent = c.tag;
-  cols[c.col].appendChild(el);
-  return {el, cfg:c};
-});
-
-function measure(){
-  const fr = field.getBoundingClientRect();
-  els.forEach(o => {
-    o.el.style.transform = 'none';
-    const r = o.el.getBoundingClientRect();
-    /* точка хаоса — от центра поля, куда карточка «прилетает» из головы */
-    o.dx = (fr.width/2 - r.width/2 + o.cfg.x*fr.width) - (r.left - fr.left);
-    o.dy = (fr.height/2 - r.height/2 + o.cfg.y*fr.height) - (r.top - fr.top);
-  });
+/* ---- текст карточки рисуем в картинку ---- */
+function cardTexture(card){
+  const W = 512, H = 300, c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const g = c.getContext('2d');
+  const hex = '#' + card.c.toString(16).padStart(6,'0');
+  g.fillStyle = hex; g.fillRect(0,0,W,H);
+  g.fillStyle = 'rgba(20,21,23,' + (card.done ? '.45' : '.92') + ')';
+  g.font = '700 34px Onest, -apple-system, Arial';
+  g.textBaseline = 'top';
+  const words = card.text.split(' ');
+  let line = '', y = 40;
+  for(const w of words){
+    const t = line ? line + ' ' + w : w;
+    if(g.measureText(t).width > W - 72){ g.fillText(line, 36, y); y += 44; line = w; }
+    else line = t;
+  }
+  g.fillText(line, 36, y);
+  if(card.done){
+    g.strokeStyle = 'rgba(20,21,23,.5)'; g.lineWidth = 3;
+    g.beginPath(); g.moveTo(36, y + 22); g.lineTo(36 + g.measureText(line).width, y + 22); g.stroke();
+    g.lineWidth = 7; g.strokeStyle = 'rgba(20,21,23,.55)';
+    g.beginPath(); g.moveTo(W-86, 46); g.lineTo(W-66, 66); g.lineTo(W-30, 26); g.stroke();
+  }
+  g.fillStyle = 'rgba(20,21,23,.5)';
+  g.font = '500 20px "JetBrains Mono", monospace';
+  g.fillText(card.tag.toUpperCase(), 36, H - 52);
+  const tex = new THREE.CanvasTexture(c);
+  tex.anisotropy = 4;
+  return tex;
 }
 
-let lastCounts = [-1,-1,-1];
-let tiltX = 0, tiltY = 0;
-function renderFlow(p){
-  let counts = [0,0,0], hot = [false,false,false];
-  els.forEach((o,i) => {
-    const t = easeOut(clamp((p - i*0.05) / 0.44));
-    const k = 1 - t;
-    const z  = k * o.cfg.z;                        /* глубина: летит «из-за экрана» */
-    const rx = k * o.cfg.rx + tiltX * (0.35 + 0.65*k);
-    const ry = k * o.cfg.ry + tiltY * (0.35 + 0.65*k);
-    o.el.style.transform =
-      `translate3d(${(o.dx*k).toFixed(1)}px, ${(o.dy*k).toFixed(1)}px, ${z.toFixed(1)}px)` +
-      ` rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) rotate(${(o.cfg.r*k).toFixed(2)}deg)`;
-    o.el.style.setProperty('--gloss', (0.10 + 0.32*k).toFixed(3));
-    o.el.style.boxShadow = `0 ${(18 + 46*k).toFixed(0)}px ${(34 + 60*k).toFixed(0)}px -${(20 - 6*k).toFixed(0)}px rgba(0,0,0,${(0.7 + 0.25*k).toFixed(2)})`;
-    o.el.style.zIndex = k > 0.02 ? Math.round(10 + z/10) : 1;
-    if(t > .6) counts[o.cfg.col]++;
-    if(t > .05 && t < .97) hot[o.cfg.col] = true;
+function buildScene(){
+  const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
+  camera.position.set(0, 0.1, 16.5);
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+  const key = new THREE.DirectionalLight(0xfff3d0, 1.5);
+  key.position.set(-5, 9, 7);
+  key.castShadow = true;
+  key.shadow.mapSize.set(1024,1024);
+  key.shadow.camera.left = -9; key.shadow.camera.right = 9;
+  key.shadow.camera.top = 7;   key.shadow.camera.bottom = -7;
+  key.shadow.radius = 4;
+  scene.add(key);
+  scene.add(new THREE.DirectionalLight(0x9ec9ff, 0.35).translateX(6));
+
+  /* доска — наклонённый стол */
+  const board = new THREE.Group();
+  board.rotation.x = -0.30;
+  scene.add(board);
+
+  const deskMat = new THREE.MeshStandardMaterial({color:0x16181c, roughness:.95, metalness:0});
+  const desk = new THREE.Mesh(new THREE.BoxGeometry(10.2, 7.4, .3), deskMat);
+  desk.position.z = -.16; desk.receiveShadow = true;
+  board.add(desk);
+
+  const colMat = new THREE.MeshStandardMaterial({color:0x1d2126, roughness:.9});
+  const COLX = [-3.3, 0, 3.3];
+  COLX.forEach(x => {
+    const col = new THREE.Mesh(new THREE.BoxGeometry(3.05, 6.8, .06), colMat);
+    col.position.set(x, 0, .02); col.receiveShadow = true;
+    board.add(col);
   });
-  cols.forEach((c,i) => c.classList.toggle('hot', hot[i]));
-  counts.forEach((c,i) => { if(c !== lastCounts[i]){ cols[i].querySelector('.cnt').textContent = c; lastCounts[i] = c; } });
-  stageTitle.textContent = p > .72 ? 'Всё на доске.' : (p > .22 ? 'Раскладываю.' : 'Сорок дел. Одна голова.');
-  stageHint.textContent = p > .72 ? 'Дальше — один шаг на сегодня' : 'Листайте — разложим';
+
+  /* карточки — плитки с толщиной */
+  const CW = 2.8, CH = 1.34, CT = .12;
+  const used = [0,0,0];
+  const cards = CARDS.map((cfg, i) => {
+    const tex = cardTexture(cfg);
+    const side = new THREE.MeshStandardMaterial({color:cfg.c, roughness:.55, metalness:.02});
+    const face = new THREE.MeshStandardMaterial({map:tex, roughness:.5, metalness:.02});
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(CW, CH, CT),
+      [side, side, side, side, face, side]);
+    mesh.castShadow = true;
+    const slot = used[cfg.col]++;
+    const to = new THREE.Vector3(COLX[cfg.col], 2.15 - slot*1.55, CT/2 + .05);
+    const from = new THREE.Vector3(
+      COLX[cfg.col] + (i%2 ? 2.6 : -2.8) + (i*0.35 - 1.1),
+      2.0 - ((i*1.5) % 4.4) - 0.8,
+      2.6 + (i % 3) * 1.3
+    );
+    const rot = new THREE.Euler(
+      (i%2 ? .5 : -.42) + i*.03,
+      (i%3 ? -.55 : .6),
+      (i%2 ? .35 : -.3)
+    );
+    board.add(mesh);
+    return {mesh, to, from, rot, cfg};
+  });
+
+  function resize(){
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    if(!w || !h) return;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.fov = w < 700 ? 46 : 32;
+    camera.updateProjectionMatrix();
+  }
+  resize();
+  addEventListener('resize', resize);
+
+  let visible = true;
+  new IntersectionObserver(es => es.forEach(e => visible = e.isIntersecting), {rootMargin:'120px'}).observe(canvas);
+
+  let mxS = 0, myS = 0;
+  addEventListener('pointermove', e => {
+    if(e.pointerType !== 'mouse') return;
+    mxS = (e.clientX/innerWidth - .5) * 2;
+    myS = (e.clientY/innerHeight - .5) * 2;
+  }, {passive:true});
+
+  const lastCounts = [-1,-1,-1];
+  const v = new THREE.Vector3();
+
+  renderFlow = function(p){
+    if(!visible) return;
+    const counts = [0,0,0];
+    cards.forEach((o,i) => {
+      const t = easeOut(clamp((p - i*0.055) / 0.46));
+      const k = 1 - t;
+      v.lerpVectors(o.from, o.to, t);
+      /* лёгкая дуга: карточка поднимается и опускается на доску */
+      o.mesh.position.set(v.x, v.y + Math.sin(t*Math.PI) * .45, v.z);
+      o.mesh.rotation.set(o.rot.x*k, o.rot.y*k, o.rot.z*k);
+      const sc = 1 + .14*k;
+      o.mesh.scale.set(sc, sc, 1);
+      if(t > .6) counts[o.cfg.col]++;
+    });
+    counts.forEach((c,i) => { if(c !== lastCounts[i]){ counters[i].textContent = c; lastCounts[i] = c; } });
+    board.rotation.y += ((mxS * .10) - board.rotation.y) * .06;
+    board.rotation.x += ((-.30 + myS * .05) - board.rotation.x) * .06;
+    stageTitle.textContent = p > .72 ? 'Всё на доске.' : (p > .22 ? 'Раскладываю.' : 'Сорок дел. Одна голова.');
+    stageHint.textContent = p > .72 ? 'Дальше — один шаг на сегодня' : 'Листайте — разложим';
+    renderer.render(scene, camera);
+  };
+  renderFlow(0);
 }
+
+/* грузим движок и собираем сцену; если не загрузился — страница просто работает без неё */
+(function(){
+  const s = document.createElement('script');
+  s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js';
+  s.onload = () => { try { buildScene(); } catch(e){ canvas.style.display = 'none'; } };
+  s.onerror = () => { canvas.style.display = 'none'; };
+  document.head.appendChild(s);
+})();
 
 /* ---------- общий цикл прокрутки ---------- */
 const bar = document.getElementById('bar');
@@ -422,7 +534,6 @@ const facts = [...document.querySelectorAll('.fact')];
 let mx = 0, my = 0, tx = 0, ty = 0, marq = 0, lastY = scrollY, vel = 0, fillNow = 0;
 
 addEventListener('pointermove', e => { if(e.pointerType !== 'mouse') return; mx = (e.clientX/innerWidth - .5)*2; my = (e.clientY/innerHeight - .5)*2; }, {passive:true});
-addEventListener('resize', measure);
 
 function tick(ts){
   const y = scrollY;
@@ -444,10 +555,6 @@ function tick(ts){
   if(half && marq <= -half) marq += half;
   if(half && marq > 0) marq -= half;
   track.style.transform = `translate3d(${marq.toFixed(1)}px,0,0)`;
-
-  /* сцена слегка поворачивается за мышью — объём читается даже в покое */
-  tiltX += ((-my * 4) - tiltX) * 0.06;
-  tiltY += (( mx * 6) - tiltY) * 0.06;
 
   /* карточки фактов слегка следуют за мышью */
   tx += (mx - tx)*0.06; ty += (my - ty)*0.06;
@@ -491,10 +598,6 @@ if(magnet && !reduce && matchMedia('(hover:hover)').matches){
   magnet.addEventListener('pointerleave', () => { magnet.style.transition = 'transform 420ms var(--ease)'; magnet.style.transform = 'none'; setTimeout(() => magnet.style.transition = '', 440); });
 }
 
-measure();
-addEventListener('load', measure);
-if(document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
-new ResizeObserver(() => measure()).observe(document.querySelector('.live'));
 if(reduce){
   renderFlow(1);
   document.querySelectorAll('h2 .w i').forEach(w => { w.style.opacity = 1; w.style.transform = 'none'; });
