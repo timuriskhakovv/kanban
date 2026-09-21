@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Рилс Трекер</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0c0c0e;
+      --card: #17171a;
+      --card2: #1f1f23;
+      --border: #2a2a30;
+      --text: #ffffff;
+      --muted: #55555f;
+      --muted2: #888898;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      padding: 0 16px 100px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* ── Header ── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 52px 0 28px;
+    }
+    .header h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+    .total-badge {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 13px;
+      color: var(--muted2);
+      font-weight: 500;
+    }
+    .total-badge b { color: var(--text); font-weight: 700; font-size: 15px; }
+
+    /* ── Sync banner ── */
+    .sync-banner {
+      background: #1a1500;
+      border: 1px solid #3a3000;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 20px;
+      font-size: 12px;
+      color: #998855;
+      line-height: 1.5;
+    }
+    .sync-banner b { color: #ccaa44; }
+
+    /* ── Day card ── */
+    .day-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px 16px 16px;
+      margin-bottom: 10px;
+    }
+    .day-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .day-date { font-size: 16px; font-weight: 600; letter-spacing: -0.2px; }
+    .day-head-right { display: flex; align-items: center; gap: 10px; }
+    .day-count { font-size: 13px; color: var(--muted2); }
+    .day-count b { color: var(--text); font-size: 16px; font-weight: 700; margin-right: 2px; }
+    .day-del {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 16px;
+      cursor: pointer;
+      padding: 2px 4px;
+      line-height: 1;
+      transition: color 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .day-del:active { color: #ff4444; }
+
+    /* ── Count controls under grid ── */
+    .day-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-top: 12px;
+    }
+    .count-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 20px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.15s;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    .count-btn:active { opacity: 0.6; }
+    .count-label { font-size: 12px; color: var(--muted2); min-width: 64px; text-align: center; }
+
+    /* ── Squares ── */
+    .squares {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+    }
+
+    .sq {
+      height: 62px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      overflow: hidden;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      user-select: none;
+      transition: transform 0.1s;
+    }
+    .sq:active { transform: scale(0.84); }
+
+    /* Unchecked */
+    .sq.off {
+      background: var(--card2);
+      border: 1.5px solid var(--border);
+    }
+    .sq-num {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    /* Checked — iOS green */
+    .sq.on {
+      background: #34C759;
+      border: 1.5px solid #34C759;
+      justify-content: center;
+      gap: 4px;
+    }
+    /* Big checkmark when no time set */
+    .sq-chk {
+      font-size: 22px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    /* Smaller checkmark when time is also shown */
+    .sq.has-time .sq-chk {
+      font-size: 15px;
+    }
+    /* Time strip — only shown when time is set */
+    .sq-time {
+      width: 100%;
+      text-align: center;
+      font-size: 9px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.95);
+      background: rgba(0,0,0,0.18);
+      border-radius: 4px;
+      padding: 3px 2px;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    /* ── Top actions ── */
+    .top-actions {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      position: sticky;
+      top: 12px;
+      z-index: 10;
+    }
+    .add-btn {
+      flex: 1;
+      padding: 16px;
+      background: #34C759;
+      color: #fff;
+      border: none;
+      border-radius: 16px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      letter-spacing: -0.2px;
+    }
+    .add-btn:active { opacity: 0.8; }
+    .date-btn {
+      width: 56px;
+      flex-shrink: 0;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      font-size: 22px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    .date-btn:active { opacity: 0.7; }
+    /* Hidden native date input, triggered programmatically */
+    #datePicker {
+      position: absolute;
+      opacity: 0;
+      width: 56px;
+      height: 1px;
+      right: 0;
+      pointer-events: none;
+    }
+
+    /* ── Empty state ── */
+    .empty {
+      text-align: center;
+      padding: 80px 0 40px;
+      color: var(--muted);
+    }
+    .empty .icon { font-size: 40px; margin-bottom: 12px; }
+    .empty p { font-size: 15px; line-height: 1.5; }
+
+    /* ── Time picker (compact popover) ── */
+    .sheet-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 200;
+    }
+    .sheet-overlay.open { display: block; }
+
+    .time-sheet {
+      position: fixed;
+      /* centered on screen, max-width matches page */
+      left: 50%; bottom: 24px;
+      transform: translateX(-50%) translateY(20px);
+      width: calc(100% - 32px);
+      max-width: 448px;
+      background: #232326;
+      border: 1px solid #3a3a40;
+      border-radius: 18px;
+      padding: 16px 16px 14px;
+      z-index: 201;
+      opacity: 0;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      pointer-events: none;
+    }
+    .time-sheet.open {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: all;
+    }
+
+    .sheet-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted2);
+      text-align: center;
+      margin-bottom: 12px;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+    }
+
+    /* Compact time inputs row */
+    .time-input-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .time-fld {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: 0;
+      color: var(--text);
+      background: var(--card2);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      outline: none;
+      text-align: center;
+      padding: 10px 4px;
+      font-family: inherit;
+      width: 78px;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .time-fld:focus { border-color: #34C759; }
+    .time-colon {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--muted2);
+    }
+
+    .sheet-btns {
+      display: flex;
+      gap: 8px;
+    }
+    .sheet-btn {
+      flex: 1;
+      padding: 11px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      font-family: inherit;
+    }
+    .sheet-btn-clear { background: var(--card2); color: var(--muted2); }
+    .sheet-btn-done  { background: #fff; color: #000; }
+
+    /* ── Setup modal ── */
+    .modal-bg {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 300;
+      padding: 24px 16px;
+      overflow-y: auto;
+    }
+    .modal-bg.open { display: flex; align-items: flex-start; justify-content: center; }
+    .modal {
+      background: #1a1a1e;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      width: 100%;
+      max-width: 440px;
+      margin-top: 20px;
+    }
+    .modal h2 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+    .modal .sub { font-size: 13px; color: var(--muted2); margin-bottom: 20px; }
+    .modal ol { padding-left: 18px; }
+    .modal ol li { font-size: 13px; color: var(--muted2); margin-bottom: 10px; line-height: 1.5; }
+    .modal ol li b { color: var(--text); }
+    .modal code {
+      display: block; background: #111; border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 12px;
+      font-family: 'SF Mono', monospace; font-size: 11px; color: #88cc88;
+      margin: 6px 0; white-space: pre; overflow-x: auto;
+    }
+    .input-row { margin-bottom: 10px; }
+    .input-row label { display: block; font-size: 12px; color: var(--muted2); margin-bottom: 4px; }
+    .input-row input {
+      width: 100%; background: #111; border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 12px; font-size: 13px; color: var(--text); outline: none;
+    }
+    .input-row input:focus { border-color: #555; }
+    .btn-row { display: flex; gap: 8px; margin-top: 16px; }
+    .btn { flex: 1; padding: 13px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; font-family: inherit; }
+    .btn-primary { background: var(--text); color: #000; }
+    .btn-secondary { background: var(--card2); color: var(--muted2); }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>Рилсы</h1>
+    <div class="total-badge">Всего: <b id="totalCount">0</b></div>
+  </div>
+
+  <div id="syncBanner" class="sync-banner" style="display:none">
+    <b>Только локально.</b> Данные сохраняются на этом устройстве.
+    <a href="#" onclick="openSetup(); return false;" style="color:#ccaa44; margin-left:4px;">Подключить синхронизацию →</a>
+  </div>
+
+  <div class="top-actions">
+    <button class="add-btn" onclick="addToday()">+ Сегодня</button>
+    <button class="date-btn" onclick="pickDate()" title="Выбрать день">📅</button>
+    <input type="date" id="datePicker" onchange="addForDate(this.value)">
+  </div>
+
+  <div id="daysList"></div>
+
+  <!-- Time picker bottom sheet -->
+  <div class="sheet-overlay" id="sheetOverlay" onclick="closeTimePicker()"></div>
+  <div class="time-sheet" id="timeSheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Время выкладки</div>
+    <div class="time-input-wrap">
+      <input class="time-fld" id="selHour" type="text" inputmode="numeric"
+             maxlength="2" placeholder="чч"
+             oninput="onHourInput(this)">
+      <span class="time-colon">:</span>
+      <input class="time-fld" id="selMin" type="text" inputmode="numeric"
+             maxlength="2" placeholder="мм"
+             oninput="onMinInput(this)">
+    </div>
+    <div class="sheet-btns">
+      <button class="sheet-btn sheet-btn-clear" onclick="clearTime()">Убрать время</button>
+      <button class="sheet-btn sheet-btn-done"  onclick="closeTimePicker()">Готово</button>
+    </div>
+  </div>
+
+  <!-- Setup modal -->
+  <div class="modal-bg" id="modalBg" onclick="closeSetupOutside(event)">
+    <div class="modal">
+      <h2>Синхронизация</h2>
+      <div class="sub">Бесплатно. Данные будут доступны с любого устройства.</div>
+      <ol>
+        <li>Зайди на <b>supabase.com</b> → New project</li>
+        <li>В разделе <b>SQL Editor</b> выполни:
+          <code>create table reels_tracker (
+  date text primary key,
+  squares text
+);
+
+alter table reels_tracker enable row level security;
+create policy "public" on reels_tracker
+  for all using (true) with check (true);</code>
+        </li>
+        <li>В <b>Settings → API</b> скопируй <b>Project URL</b> и <b>anon public key</b>:</li>
+      </ol>
+      <div class="input-row">
+        <label>Project URL</label>
+        <input id="inputUrl" type="url" placeholder="https://xxxx.supabase.co">
+      </div>
+      <div class="input-row">
+        <label>Anon Key</label>
+        <input id="inputKey" type="text" placeholder="eyJhbGci...">
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="closeSetup()">Отмена</button>
+        <button class="btn btn-primary"   onclick="saveConfig()">Подключить</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── Config ──────────────────────────────────────────────────
+    let SUPABASE_URL = localStorage.getItem('sb_url') || '';
+    let SUPABASE_KEY = localStorage.getItem('sb_key') || '';
+    let useSync = !!(SUPABASE_URL && SUPABASE_KEY);
+
+    const DEFAULT_COUNT = 21; // default squares for a new day
+
+    // ── State ────────────────────────────────────────────────────
+    // { "2026-06-01": [{on:bool, time:"HH:MM"}, ...], ... }  (length varies per day)
+    let data = {};
+    let editDate = null;
+    let editIdx  = null;
+
+    // ── Time field input handlers ───────────────────────────────
+    // Keep only digits; clamp hour 0-23, minute 0-59
+    function onHourInput(el) {
+      el.value = el.value.replace(/\D/g, '').slice(0, 2);
+      const n = parseInt(el.value, 10);
+      if (!isNaN(n) && n > 23) el.value = '23';
+      // Auto-jump to minutes when 2 digits entered
+      if (el.value.length === 2) document.getElementById('selMin').focus();
+    }
+    function onMinInput(el) {
+      el.value = el.value.replace(/\D/g, '').slice(0, 2);
+      const n = parseInt(el.value, 10);
+      if (!isNaN(n) && n > 59) el.value = '59';
+    }
+
+    // ── Normalize ────────────────────────────────────────────────
+    // Keeps the day's own length; falls back to default for legacy data.
+    function normalizeDay(arr) {
+      const len = Array.isArray(arr) && arr.length ? arr.length : DEFAULT_COUNT;
+      return Array.from({ length: len }, (_, i) => {
+        const v = arr?.[i];
+        if (v == null)              return { on: false, time: '' };
+        if (typeof v === 'boolean') return { on: v,     time: '' };
+        return { on: !!v.on, time: v.time || '' };
+      });
+    }
+
+    // ── Utils ────────────────────────────────────────────────────
+    function todayStr() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+    function fmtDate(str) {
+      const [y, m, day] = str.split('-').map(Number);
+      const d = new Date(y, m - 1, day);
+      const months = ['января','февраля','марта','апреля','мая','июня',
+                      'июля','августа','сентября','октября','ноября','декабря'];
+      const days = ['вс','пн','вт','ср','чт','пт','сб'];
+      return `${day} ${months[m-1]} · ${days[d.getDay()]}`;
+    }
+    function totalPosted() {
+      return Object.values(data).reduce((s, sq) => s + sq.filter(v => v.on).length, 0);
+    }
+
+    // ── Render ───────────────────────────────────────────────────
+    function render() {
+      document.getElementById('totalCount').textContent = totalPosted();
+      const sorted = Object.keys(data).sort((a, b) => b.localeCompare(a));
+      const list = document.getElementById('daysList');
+
+      if (sorted.length === 0) {
+        list.innerHTML = `<div class="empty"><div class="icon">🎬</div><p>Нажми кнопку ниже,<br>чтобы начать отмечать рилсы</p></div>`;
+        document.getElementById('syncBanner').style.display = useSync ? 'none' : 'block';
+        return;
+      }
+
+      list.innerHTML = sorted.map(date => {
+        const squares = normalizeDay(data[date]);
+        data[date] = squares;
+        const count = squares.filter(v => v.on).length;
+        const total = squares.length;
+        return `
+          <div class="day-card">
+            <div class="day-header">
+              <div class="day-date">${fmtDate(date)}</div>
+              <div class="day-head-right">
+                <div class="day-count"><b>${count}</b>из ${total}</div>
+                <button class="day-del" onclick="deleteDay('${date}')" title="Удалить день">✕</button>
+              </div>
+            </div>
+            <div class="squares">
+              ${squares.map((sq, i) => sq.on ? `
+                <div class="sq on${sq.time ? ' has-time' : ''}" onclick="toggleSq('${date}',${i})">
+                  <span class="sq-chk">✓</span>
+                  ${sq.time ? `<span class="sq-time">${sq.time}</span>` : ''}
+                </div>
+              ` : `
+                <div class="sq off" onclick="toggleSq('${date}',${i})">
+                  <span class="sq-num">${i + 1}</span>
+                </div>
+              `).join('')}
+            </div>
+            <div class="day-controls">
+              <button class="count-btn" onclick="changeCount('${date}',-1)">−</button>
+              <span class="count-label">${total} ячеек</span>
+              <button class="count-btn" onclick="changeCount('${date}',1)">+</button>
+            </div>
+          </div>`;
+      }).join('');
+
+      document.getElementById('syncBanner').style.display = useSync ? 'none' : 'block';
+    }
+
+    // ── Square toggle ────────────────────────────────────────────
+    async function toggleSq(date, idx) {
+      const sq = data[date][idx];
+      if (sq.on) {
+        // Uncheck — whole square is clickable to remove
+        sq.on = false;
+        sq.time = '';
+        render();
+        await saveDay(date);
+      } else {
+        // Check — immediately open time picker
+        sq.on = true;
+        render();
+        await saveDay(date);
+        openTimePickerFor(date, idx);
+      }
+    }
+
+    // ── Time picker ──────────────────────────────────────────────
+    function openTimePickerFor(date, idx) {
+      editDate = date;
+      editIdx  = idx;
+      // Pre-fill from saved time, or default to current time
+      const saved = data[date][idx].time;
+      let h, m;
+      if (saved && saved.includes(':')) {
+        [h, m] = saved.split(':');
+      } else {
+        const now = new Date();
+        h = String(now.getHours()).padStart(2, '0');
+        m = String(now.getMinutes()).padStart(2, '0');
+      }
+      document.getElementById('selHour').value = h;
+      document.getElementById('selMin').value  = m;
+      document.getElementById('sheetOverlay').classList.add('open');
+      document.getElementById('timeSheet').classList.add('open');
+    }
+
+    async function clearTime() {
+      if (editDate !== null) {
+        data[editDate][editIdx].time = '';
+        saveLocal();
+        if (useSync) saveDay(editDate);
+        render();
+      }
+      hideSheet();
+    }
+
+    async function closeTimePicker() {
+      if (editDate !== null) {
+        // Read text fields, pad with zeros; empty = no time
+        let h = document.getElementById('selHour').value.replace(/\D/g, '');
+        let m = document.getElementById('selMin').value.replace(/\D/g, '');
+        let time = '';
+        if (h !== '' || m !== '') {
+          h = String(Math.min(parseInt(h || '0', 10), 23)).padStart(2, '0');
+          m = String(Math.min(parseInt(m || '0', 10), 59)).padStart(2, '0');
+          time = `${h}:${m}`;
+        }
+        data[editDate][editIdx].time = time;
+        saveLocal();
+        if (useSync) await saveDay(editDate);
+        render();
+      }
+      hideSheet();
+    }
+
+    function hideSheet() {
+      document.getElementById('sheetOverlay').classList.remove('open');
+      document.getElementById('timeSheet').classList.remove('open');
+      editDate = null;
+      editIdx  = null;
+    }
+
+    // ── Add / pick day ───────────────────────────────────────────
+    async function addDay(dateKey) {
+      if (data[dateKey]) {
+        render();
+        // Scroll to the existing day
+        const idx = Object.keys(data).sort((a, b) => b.localeCompare(a)).indexOf(dateKey);
+        document.querySelectorAll('.day-card')[idx]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+      data[dateKey] = Array.from({ length: DEFAULT_COUNT }, () => ({ on: false, time: '' }));
+      render();
+      await saveDay(dateKey);
+    }
+
+    async function addToday() {
+      await addDay(todayStr());
+    }
+
+    function pickDate() {
+      const dp = document.getElementById('datePicker');
+      dp.value = todayStr();
+      // showPicker is fine here — it's a standalone date field, no custom buttons
+      try { dp.showPicker(); } catch { dp.focus(); dp.click(); }
+    }
+
+    async function addForDate(val) {
+      if (!val) return;
+      await addDay(val); // val is already "YYYY-MM-DD"
+    }
+
+    // ── Delete day ───────────────────────────────────────────────
+    async function deleteDay(date) {
+      if (!confirm(`Удалить ${fmtDate(date)}?`)) return;
+      delete data[date];
+      saveLocal();
+      render();
+      if (useSync) await deleteDayRemote(date);
+    }
+
+    // ── Change number of squares ─────────────────────────────────
+    async function changeCount(date, delta) {
+      const arr = data[date];
+      if (!arr) return;
+      if (delta > 0) {
+        arr.push({ on: false, time: '' });
+      } else if (delta < 0 && arr.length > 1) {
+        arr.pop(); // remove last cell
+      }
+      render();
+      await saveDay(date);
+    }
+
+    // ── Storage ──────────────────────────────────────────────────
+    async function load() {
+      if (useSync) {
+        try {
+          const res = await fetch(`${SUPABASE_URL}/rest/v1/reels_tracker?select=date,squares`, {
+            headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+          });
+          if (!res.ok) throw new Error();
+          const rows = await res.json();
+          data = {};
+          rows.forEach(r => { data[r.date] = JSON.parse(r.squares); });
+          return;
+        } catch { /* fallback */ }
+      }
+      const saved = localStorage.getItem('reels_data');
+      data = saved ? JSON.parse(saved) : {};
+    }
+
+    function saveLocal() {
+      localStorage.setItem('reels_data', JSON.stringify(data));
+    }
+
+    async function saveDay(date) {
+      saveLocal();
+      if (!useSync) return;
+      try {
+        await fetch(`${SUPABASE_URL}/rest/v1/reels_tracker`, {
+          method: 'POST',
+          headers: {
+            apikey: SUPABASE_KEY,
+            Authorization: `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json',
+            Prefer: 'resolution=merge-duplicates'
+          },
+          body: JSON.stringify({ date, squares: JSON.stringify(data[date]) })
+        });
+      } catch { /* silent */ }
+    }
+
+    async function deleteDayRemote(date) {
+      try {
+        await fetch(`${SUPABASE_URL}/rest/v1/reels_tracker?date=eq.${date}`, {
+          method: 'DELETE',
+          headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+        });
+      } catch { /* silent */ }
+    }
+
+    // ── Setup modal ──────────────────────────────────────────────
+    function openSetup() {
+      document.getElementById('inputUrl').value = SUPABASE_URL;
+      document.getElementById('inputKey').value = SUPABASE_KEY;
+      document.getElementById('modalBg').classList.add('open');
+    }
+    function closeSetup() { document.getElementById('modalBg').classList.remove('open'); }
+    function closeSetupOutside(e) {
+      if (e.target === document.getElementById('modalBg')) closeSetup();
+    }
+    async function saveConfig() {
+      const url = document.getElementById('inputUrl').value.trim().replace(/\/$/, '');
+      const key = document.getElementById('inputKey').value.trim();
+      if (!url || !key) { alert('Заполни оба поля'); return; }
+      localStorage.setItem('sb_url', url); localStorage.setItem('sb_key', key);
+      SUPABASE_URL = url; SUPABASE_KEY = key; useSync = true;
+      closeSetup();
+      for (const date of Object.keys(data)) await saveDay(date);
+      render();
+    }
+
+    // ── Init ─────────────────────────────────────────────────────
+    load().then(render);
+  </script>
+</body>
+</html>
