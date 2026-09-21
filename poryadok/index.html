@@ -68,14 +68,17 @@ h1 .out{color:transparent;-webkit-text-stroke:1.6px var(--ink)}
 
 /* липкая сцена: хаос → доска */
 .flow{position:relative;height:235vh}
-.stage{perspective:1400px;perspective-origin:50% 42%;position:sticky;top:calc(54px + env(safe-area-inset-top,0px));height:calc(100svh - 54px - env(safe-area-inset-top,0px));display:flex;flex-direction:column;justify-content:center;overflow:hidden}
-.stage h2{margin:0 0 18px}
+.stage{position:sticky;top:calc(54px + env(safe-area-inset-top,0px));height:calc(100svh - 54px - env(safe-area-inset-top,0px));display:flex;flex-direction:column;justify-content:center;overflow:hidden}
+.stage h2{margin:0 0 18px;text-shadow:0 8px 40px rgba(10,11,13,.95),0 2px 10px rgba(10,11,13,.9)}
+.stage .hint,.stage .colhead,.stage .legend{text-shadow:0 2px 12px rgba(10,11,13,.9)}
 .stage .hint{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin:0 0 20px;min-height:1.2em}
 .field{position:relative}
-.live{background:var(--bg-2);border-radius:26px;padding:clamp(12px,2vw,20px);box-shadow:inset 0 0 0 1px var(--line)}
+.live{background:transparent;padding:0}
 .colhead{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(8px,1.4vw,14px)}
 .chx{font-family:var(--mono);font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);display:flex;justify-content:space-between;gap:10px;padding:0 4px 10px;border-bottom:1px solid var(--line)}
-#scene{display:block;width:100%;height:min(58vh,520px);touch-action:pan-y}
+#scene{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0;pointer-events:none}
+.stage .wrap{position:relative;z-index:1}
+.colhead{max-width:1120px;margin:0 auto}
 .col{perspective:1600px;background:var(--bg-3);border-radius:18px;padding:12px;display:flex;flex-direction:column;gap:10px;min-height:44vh;transition:box-shadow 300ms ease}
 .col.hot{box-shadow:inset 0 0 0 1px rgba(255,226,122,.5)}
 .ch{font-family:var(--mono);font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);display:flex;justify-content:space-between;gap:10px;padding:0 2px 8px;border-bottom:1px solid var(--line)}
@@ -197,6 +200,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
   <!-- липкая сцена -->
   <div class="flow" id="flow">
     <div class="stage">
+      <canvas id="scene" aria-label="Листы дел, которые слетаются на доску"></canvas>
       <div class="wrap">
         <h2 id="stageTitle">Сорок дел. Одна голова.</h2>
         <p class="hint" id="stageHint">Листайте — разложим</p>
@@ -207,7 +211,6 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
               <div class="chx"><span>Сегодня</span><span class="cnt" data-c="1">0</span></div>
               <div class="chx"><span>Сделано</span><span class="cnt" data-c="2">0</span></div>
             </div>
-            <canvas id="scene" aria-label="Карточки дел, которые складываются в доску"></canvas>
           </div>
         </div>
         <div class="legend" aria-hidden="true">
@@ -442,6 +445,35 @@ function buildScene(){
     board.add(col);
   });
 
+  /* letters: листы бумаги, которые метёт по всему экрану */
+  const paperTex = (() => {
+    const c = document.createElement('canvas'); c.width = 256; c.height = 340;
+    const g = c.getContext('2d');
+    g.fillStyle = '#EDEAE3'; g.fillRect(0,0,256,340);
+    g.fillStyle = 'rgba(20,21,23,.16)';
+    for(let i=0;i<9;i++){ const w = 150 + Math.random()*70; g.fillRect(28, 44 + i*30, w, 7); }
+    g.fillStyle = 'rgba(20,21,23,.10)'; g.fillRect(28, 300, 90, 7);
+    return new THREE.CanvasTexture(c);
+  })();
+  const paperMat = new THREE.MeshStandardMaterial({map:paperTex, roughness:.85, transparent:true});
+  const paperSide = new THREE.MeshStandardMaterial({color:0xE6E2DA, roughness:.9, transparent:true});
+  const sheets = [];
+  for(let i=0;i<20;i++){
+    const m = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2.0, .04),
+      [paperSide,paperSide,paperSide,paperSide,paperMat,paperSide]);
+    m.castShadow = true;
+    const ang = (i / 20) * Math.PI * 2;
+    m.userData = {
+      from: new THREE.Vector3(Math.cos(ang) * (9 + (i%4)), Math.sin(ang) * (7 + (i%3)), 5 + (i%5)*1.4),
+      mid:  new THREE.Vector3(Math.cos(ang*1.7) * 3.4, Math.sin(ang*1.3) * 2.6, 2.2 + (i%4)*.6),
+      to:   new THREE.Vector3((i%3 - 1) * 3.3 + (i%2 ? .25 : -.25), 2.2 - ((i*1.7) % 5.4), .07 + (i%5)*.015),
+      spin: new THREE.Euler((i%2?1:-1)*1.3, (i%3?-1:1)*1.1, (i%2?-1:1)*1.6),
+      d: (i % 10) * 0.035
+    };
+    board.add(m);
+    sheets.push(m);
+  }
+
   /* карточки — плитки с толщиной */
   const CW = 2.8, CH = 1.34, CT = .12;
   const used = [0,0,0];
@@ -492,8 +524,24 @@ function buildScene(){
   const lastCounts = [-1,-1,-1];
   const v = new THREE.Vector3();
 
+  const tmpA = new THREE.Vector3(), tmpB = new THREE.Vector3();
   renderFlow = function(p){
     if(!visible) return;
+    /* листы: метель по всему экрану → сходятся → укладываются и гаснут */
+    sheets.forEach((m,i) => {
+      const u = m.userData;
+      const t = easeOut(clamp((p - u.d) / 0.62));
+      const k = 1 - t;
+      tmpA.lerpVectors(u.from, u.mid, easeOut(clamp(t*2)));
+      tmpB.lerpVectors(tmpA, u.to, easeOut(clamp((t - .45) / .55)));
+      m.position.copy(tmpB);
+      m.rotation.set(u.spin.x*k, u.spin.y*k, u.spin.z*k);
+      const o = t < .1 ? t*10 : (t > .72 ? Math.max(0, 1 - (t-.72)/.22) : 1);
+      m.material.forEach ? m.material.forEach(mm => mm.opacity = o) : (m.material.opacity = o);
+      m.visible = o > .02;
+      const sc = .7 + .5*k;
+      m.scale.set(sc, sc, 1);
+    });
     const counts = [0,0,0];
     cards.forEach((o,i) => {
       const t = easeOut(clamp((p - i*0.055) / 0.46));
