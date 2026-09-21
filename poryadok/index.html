@@ -76,7 +76,7 @@ h1 .out{color:transparent;-webkit-text-stroke:1.6px var(--ink)}
 .live{background:transparent;padding:0}
 .colhead{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(8px,1.4vw,14px)}
 .chx{font-family:var(--mono);font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);display:flex;justify-content:space-between;gap:10px;padding:0 4px 10px;border-bottom:1px solid var(--line)}
-#scene{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0;pointer-events:none}
+#scene{position:fixed;inset:0;width:100vw;height:100svh;display:block;z-index:0;pointer-events:none}
 .stage .wrap{position:relative;z-index:1}
 .colhead{max-width:1120px;margin:0 auto}
 .col{perspective:1600px;background:var(--bg-3);border-radius:18px;padding:12px;display:flex;flex-direction:column;gap:10px;min-height:44vh;transition:box-shadow 300ms ease}
@@ -91,8 +91,12 @@ h1 .out{color:transparent;-webkit-text-stroke:1.6px var(--ink)}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--c);margin-right:6px;vertical-align:-1px}
 
 /* секции */
-section{padding-block:clamp(56px,9vw,112px);position:relative}
-.rule{border-top:1px solid var(--line)}
+section{padding-block:clamp(56px,9vw,112px);position:relative;z-index:1}
+.watch .wrap{background:rgba(10,11,13,.62);-webkit-backdrop-filter:blur(14px) saturate(140%);backdrop-filter:blur(14px) saturate(140%);border-radius:28px;padding-block:clamp(26px,4vw,44px);box-shadow:inset 0 0 0 1px var(--line)}
+.hero,.nav,footer{position:relative;z-index:2}
+.hero{background:linear-gradient(180deg,rgba(10,11,13,.86),rgba(10,11,13,.55))}
+footer{background:rgba(10,11,13,.86)}
+.rule{border-top:0}
 h2{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:clamp(2rem,6vw,4.2rem);line-height:.92;margin:0 0 24px;text-wrap:balance}
 h2 .w{display:inline-block;vertical-align:bottom}
 h2 .w i{display:inline-block;font-style:normal;opacity:.14;transform:translateY(8px);will-change:opacity,transform}
@@ -189,6 +193,7 @@ section .wrap{position:relative;z-index:1}
   </div>
 </header>
 
+<canvas id="scene" aria-label="Листы дел, которые слетаются на доску"></canvas>
 <main id="top">
   <div class="hero">
     <div class="glow" id="glow" aria-hidden="true"></div>
@@ -209,7 +214,6 @@ section .wrap{position:relative;z-index:1}
   <!-- липкая сцена -->
   <div class="flow" id="flow">
     <div class="stage">
-      <canvas id="scene" aria-label="Листы дел, которые слетаются на доску"></canvas>
       <div class="wrap">
         <h2 id="stageTitle">Сорок дел. Одна голова.</h2>
         <p class="hint" id="stageHint">Листайте — разложим</p>
@@ -542,6 +546,8 @@ function buildScene(){
   const v = new THREE.Vector3();
 
   const tmpA = new THREE.Vector3(), tmpB = new THREE.Vector3();
+  const lookAt = new THREE.Vector3(0,0,0);
+  let focusW = 0;
   renderFlow = function(p){
     if(!visible) return;
     /* листы: метель по всему экрану → сходятся → укладываются и гаснут */
@@ -589,6 +595,30 @@ function buildScene(){
       if(t > .6) counts[o.cfg.col]++;
     });
     counts.forEach((c,i) => { if(c !== lastCounts[i]){ counters[i].textContent = c; lastCounts[i] = c; } });
+    /* камера: пока идёт доска — общий план, дальше наезжает на карточку раздела */
+    const secs = document.querySelectorAll('section.watch');
+    let best = -1, bestW = 0;
+    secs.forEach((el, si) => {
+      const r = el.getBoundingClientRect();
+      const c = r.top + r.height/2;
+      const w = 1 - Math.min(1, Math.abs(c - innerHeight*0.5) / (innerHeight*0.75));
+      if(w > bestW){ bestW = w; best = si; }
+    });
+    let camWant, lookWant;
+    if(best >= 0 && bestW > 0.04){
+      const card = cards[best % cards.length];
+      lookWant = board.localToWorld(tmpA.copy(card.to));
+      camWant = tmpB.copy(lookWant).add(new THREE.Vector3(0.9, 0.7, 5.6));
+      focusW += (bestW - focusW) * .08;
+    } else {
+      lookWant = tmpA.set(0, 0, 0);
+      camWant = tmpB.set(0, 0.1, 16.5);
+      focusW += (0 - focusW) * .08;
+    }
+    camera.position.lerp(camWant, .06);
+    lookAt.lerp(lookWant, .06);
+    camera.lookAt(lookAt);
+
     board.rotation.y += ((mxS * .10) - board.rotation.y) * .06;
     board.rotation.x += ((-.30 + myS * .05) - board.rotation.x) * .06;
     stageTitle.textContent = p > .72 ? 'Всё на доске.' : (p > .22 ? 'Раскладываю.' : 'Сорок дел. Одна голова.');
