@@ -68,16 +68,17 @@ h1 .out{color:transparent;-webkit-text-stroke:1.6px var(--ink)}
 
 /* липкая сцена: хаос → доска */
 .flow{position:relative;height:235vh}
-.stage{position:sticky;top:calc(54px + env(safe-area-inset-top,0px));height:calc(100svh - 54px - env(safe-area-inset-top,0px));display:flex;flex-direction:column;justify-content:center;overflow:hidden}
+.stage{perspective:1400px;perspective-origin:50% 42%;position:sticky;top:calc(54px + env(safe-area-inset-top,0px));height:calc(100svh - 54px - env(safe-area-inset-top,0px));display:flex;flex-direction:column;justify-content:center;overflow:hidden}
 .stage h2{margin:0 0 18px}
 .stage .hint{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin:0 0 20px;min-height:1.2em}
-.field{position:relative}
-.live{background:var(--bg-2);border-radius:26px;padding:clamp(12px,2vw,20px);box-shadow:inset 0 0 0 1px var(--line)}
-.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(8px,1.4vw,14px);align-items:start}
-.col{background:var(--bg-3);border-radius:18px;padding:12px;display:flex;flex-direction:column;gap:10px;min-height:44vh;transition:box-shadow 300ms ease}
+.field{position:relative;transform-style:preserve-3d}
+.live{transform-style:preserve-3d;background:var(--bg-2);border-radius:26px;padding:clamp(12px,2vw,20px);box-shadow:inset 0 0 0 1px var(--line)}
+.cols{transform-style:preserve-3d;display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(8px,1.4vw,14px);align-items:start}
+.col{transform-style:preserve-3d;background:var(--bg-3);border-radius:18px;padding:12px;display:flex;flex-direction:column;gap:10px;min-height:44vh;transition:box-shadow 300ms ease}
 .col.hot{box-shadow:inset 0 0 0 1px rgba(255,226,122,.5)}
 .ch{font-family:var(--mono);font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);display:flex;justify-content:space-between;gap:10px;padding:0 2px 8px;border-bottom:1px solid var(--line)}
-.card{position:relative;width:100%;background:var(--c);color:var(--st-ink);border-radius:6px;padding:12px 12px 14px;font-size:.86rem;font-weight:700;line-height:1.26;box-shadow:0 22px 40px -22px rgba(0,0,0,.95);will-change:transform;z-index:3}
+.card{position:relative;width:100%;transform-style:preserve-3d;backface-visibility:hidden;background:var(--c);color:var(--st-ink);border-radius:6px;padding:12px 12px 14px;font-size:.86rem;font-weight:700;line-height:1.26;box-shadow:0 22px 40px -22px rgba(0,0,0,.95);will-change:transform;z-index:3}
+.card::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(140deg,rgba(255,255,255,.55),rgba(255,255,255,0) 42%);opacity:var(--gloss,0);pointer-events:none}
 .card small{display:block;margin-top:8px;font-family:var(--mono);font-size:.6rem;font-weight:500;letter-spacing:.05em;text-transform:uppercase;opacity:.55}
 .card .done-mark{position:absolute;right:10px;top:10px;width:13px;height:7px;border-left:2.4px solid var(--st-ink);border-bottom:2.4px solid var(--st-ink);transform:rotate(-45deg);opacity:0;transition:opacity 300ms ease}
 .card.done .done-mark{opacity:.7}
@@ -351,13 +352,13 @@ for(let k=0;k<3;k++) words.forEach(w => { const s = document.createElement('span
 
 /* ---------- липкая сцена ---------- */
 const CARDS = [
-  {col:0, text:'Отчёт по продажам за четыре месяца', tag:'бизнес', c:'var(--st-yellow)', x:-.34, y:-.30, r:-9},
-  {col:0, text:'Погулять с сыном без телефона',      tag:'семья',  c:'var(--st-pink)',   x:.30,  y:-.36, r:7},
-  {col:0, text:'Двадцать минут книги',               tag:'развитие',c:'var(--st-green)', x:-.12, y:.34,  r:-5},
-  {col:1, text:'Открыть файл отчёта и внести первую неделю', tag:'бизнес · шаг 1', c:'var(--st-yellow)', x:.36, y:.22, r:11},
-  {col:1, text:'Позвонить подрядчику',               tag:'общество',c:'var(--st-blue)',  x:-.40, y:.10,  r:6},
-  {col:2, text:'Загранпаспорт',                      tag:'общество',c:'var(--st-blue)',  x:.14,  y:-.14, r:-12, done:true},
-  {col:2, text:'Выгрузить всё из головы на карточки',tag:'развитие',c:'var(--st-green)', x:.05,  y:.40,  r:9, done:true},
+  {col:0, text:'Отчёт по продажам за четыре месяца', tag:'бизнес', c:'var(--st-yellow)', x:-.34, y:-.30, r:-9, z:420, rx:-22, ry:26},
+  {col:0, text:'Погулять с сыном без телефона',      tag:'семья',  c:'var(--st-pink)',   x:.30,  y:-.36, r:7,  z:300, rx:18,  ry:-24},
+  {col:0, text:'Двадцать минут книги',               tag:'развитие',c:'var(--st-green)', x:-.12, y:.34,  r:-5, z:520, rx:-14, ry:18},
+  {col:1, text:'Открыть файл отчёта и внести первую неделю', tag:'бизнес · шаг 1', c:'var(--st-yellow)', x:.36, y:.22, r:11, z:360, rx:24, ry:-18},
+  {col:1, text:'Позвонить подрядчику',               tag:'общество',c:'var(--st-blue)',  x:-.40, y:.10,  r:6,  z:240, rx:-20, ry:-22},
+  {col:2, text:'Загранпаспорт',                      tag:'общество',c:'var(--st-blue)',  x:.14,  y:-.14, r:-12, z:480, rx:16,  ry:20, done:true},
+  {col:2, text:'Выгрузить всё из головы на карточки',tag:'развитие',c:'var(--st-green)', x:.05,  y:.40,  r:9,  z:280, rx:-18, ry:-14, done:true},
 ];
 const field = document.getElementById('field');
 const cols = [...document.querySelectorAll('#cols .col')];
@@ -388,13 +389,21 @@ function measure(){
 }
 
 let lastCounts = [-1,-1,-1];
+let tiltX = 0, tiltY = 0;
 function renderFlow(p){
   let counts = [0,0,0], hot = [false,false,false];
   els.forEach((o,i) => {
     const t = easeOut(clamp((p - i*0.05) / 0.44));
     const k = 1 - t;
-    o.el.style.transform = `translate3d(${(o.dx*k).toFixed(1)}px, ${(o.dy*k).toFixed(1)}px, 0) rotate(${(o.cfg.r*k).toFixed(2)}deg) scale(${(1 + 0.06*k).toFixed(3)})`;
-    o.el.style.zIndex = k > 0.02 ? 5 : 1;
+    const z  = k * o.cfg.z;                        /* глубина: летит «из-за экрана» */
+    const rx = k * o.cfg.rx + tiltX * (0.35 + 0.65*k);
+    const ry = k * o.cfg.ry + tiltY * (0.35 + 0.65*k);
+    o.el.style.transform =
+      `translate3d(${(o.dx*k).toFixed(1)}px, ${(o.dy*k).toFixed(1)}px, ${z.toFixed(1)}px)` +
+      ` rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) rotate(${(o.cfg.r*k).toFixed(2)}deg)`;
+    o.el.style.setProperty('--gloss', (0.10 + 0.32*k).toFixed(3));
+    o.el.style.boxShadow = `0 ${(18 + 46*k).toFixed(0)}px ${(34 + 60*k).toFixed(0)}px -${(20 - 6*k).toFixed(0)}px rgba(0,0,0,${(0.7 + 0.25*k).toFixed(2)})`;
+    o.el.style.zIndex = k > 0.02 ? Math.round(10 + z/10) : 1;
     if(t > .6) counts[o.cfg.col]++;
     if(t > .05 && t < .97) hot[o.cfg.col] = true;
   });
@@ -435,6 +444,10 @@ function tick(ts){
   if(half && marq <= -half) marq += half;
   if(half && marq > 0) marq -= half;
   track.style.transform = `translate3d(${marq.toFixed(1)}px,0,0)`;
+
+  /* сцена слегка поворачивается за мышью — объём читается даже в покое */
+  tiltX += ((-my * 4) - tiltX) * 0.06;
+  tiltY += (( mx * 6) - tiltY) * 0.06;
 
   /* карточки фактов слегка следуют за мышью */
   tx += (mx - tx)*0.06; ty += (my - ty)*0.06;
