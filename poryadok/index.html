@@ -396,35 +396,62 @@ const counters = [...document.querySelectorAll('.cnt')];
 let renderFlow = () => {};          /* заменится, когда сцена соберётся */
 
 /* ---- текст карточки рисуем в картинку ---- */
-function cardTexture(card){
-  const W = 512, H = 300, c = document.createElement('canvas');
+function cardTexture(card, maxAniso){
+  const W = 1024, H = 520, c = document.createElement('canvas');
   c.width = W; c.height = H;
   const g = c.getContext('2d');
   const hex = '#' + card.c.toString(16).padStart(6,'0');
   g.fillStyle = hex; g.fillRect(0,0,W,H);
-  g.fillStyle = 'rgba(20,21,23,' + (card.done ? '.45' : '.92') + ')';
-  g.font = '700 34px Onest, -apple-system, Arial';
+  /* лёгкая фактура бумаги */
+  const grad = g.createLinearGradient(0,0,W,H);
+  grad.addColorStop(0,'rgba(255,255,255,.22)'); grad.addColorStop(1,'rgba(0,0,0,.06)');
+  g.fillStyle = grad; g.fillRect(0,0,W,H);
+  g.fillStyle = card.done ? 'rgba(20,21,23,.5)' : '#141517';
+  g.font = '800 66px Onest, "Helvetica Neue", Arial, sans-serif';
   g.textBaseline = 'top';
   const words = card.text.split(' ');
-  let line = '', y = 40;
+  let line = '', y = 60, lastW = 0;
   for(const w of words){
     const t = line ? line + ' ' + w : w;
-    if(g.measureText(t).width > W - 72){ g.fillText(line, 36, y); y += 44; line = w; }
+    if(g.measureText(t).width > W - 150){ g.fillText(line, 64, y); y += 82; line = w; }
     else line = t;
   }
-  g.fillText(line, 36, y);
+  g.fillText(line, 64, y); lastW = g.measureText(line).width;
   if(card.done){
-    g.strokeStyle = 'rgba(20,21,23,.5)'; g.lineWidth = 3;
-    g.beginPath(); g.moveTo(36, y + 22); g.lineTo(36 + g.measureText(line).width, y + 22); g.stroke();
-    g.lineWidth = 7; g.strokeStyle = 'rgba(20,21,23,.55)';
-    g.beginPath(); g.moveTo(W-86, 46); g.lineTo(W-66, 66); g.lineTo(W-30, 26); g.stroke();
+    g.strokeStyle = 'rgba(20,21,23,.55)'; g.lineWidth = 6;
+    g.beginPath(); g.moveTo(64, y + 38); g.lineTo(64 + lastW, y + 38); g.stroke();
+    g.lineWidth = 12;
+    g.beginPath(); g.moveTo(W-150, 84); g.lineTo(W-114, 120); g.lineTo(W-50, 50); g.stroke();
   }
-  g.fillStyle = 'rgba(20,21,23,.5)';
-  g.font = '500 20px "JetBrains Mono", monospace';
-  g.fillText(card.tag.toUpperCase(), 36, H - 52);
+  g.fillStyle = 'rgba(20,21,23,.55)';
+  g.font = '600 34px "JetBrains Mono", Menlo, monospace';
+  g.fillText(card.tag.toUpperCase(), 64, H - 88);
   const tex = new THREE.CanvasTexture(c);
-  tex.anisotropy = 4;
+  tex.anisotropy = maxAniso || 8;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.generateMipmaps = true;
+  tex.minFilter = THREE.LinearMipmapLinearFilter;
   return tex;
+}
+
+/* общая «гибкость» бумаги: волна по листу, сила задаётся uBend */
+const uTime = {value:0};
+function makeBendable(mat, instanced){
+  mat.onBeforeCompile = (sh) => {
+    sh.uniforms.uTime = uTime;
+    sh.uniforms.uBend = mat.userData.uBend || (mat.userData.uBend = {value:0});
+    sh.uniforms.uPhase = mat.userData.uPhase || (mat.userData.uPhase = {value:Math.random()*6.28});
+    sh.vertexShader = 'uniform float uTime;\nuniform float uBend;\nuniform float uPhase;\n' +
+      (instanced ? 'attribute float aPhase;\nattribute float aBend;\n' : '') +
+      sh.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>
+        float ph = ${instanced ? 'aPhase' : 'uPhase'};
+        float bb = ${instanced ? 'aBend' : 'uBend'};
+        float wave = sin(position.x*2.4 + uTime*3.2 + ph) * 0.20
+                   + sin(position.y*3.3 + uTime*2.1 + ph*1.7) * 0.10
+                   + position.x*position.x * 0.10 * sin(uTime*1.3 + ph);
+        transformed.z += wave * bb;`);
+  };
+  return mat;
 }
 
 function buildScene(){
@@ -466,43 +493,54 @@ function buildScene(){
     board.add(col);
   });
 
-  /* letters: листы бумаги, которые метёт по всему экрану */
-  const paperTex = (() => {
-    const c = document.createElement('canvas'); c.width = 256; c.height = 340;
+  /* письма: как в «Гарри Поттере» — сотня конвертов, гнутся и планируют */
+  const envTex = (() => {
+    const c = document.createElement('canvas'); c.width = 512; c.height = 340;
     const g = c.getContext('2d');
-    g.fillStyle = '#EDEAE3'; g.fillRect(0,0,256,340);
-    g.fillStyle = 'rgba(20,21,23,.16)';
-    for(let i=0;i<9;i++){ const w = 150 + Math.random()*70; g.fillRect(28, 44 + i*30, w, 7); }
-    g.fillStyle = 'rgba(20,21,23,.10)'; g.fillRect(28, 300, 90, 7);
-    return new THREE.CanvasTexture(c);
+    g.fillStyle = '#EFE6D2'; g.fillRect(0,0,512,340);
+    g.strokeStyle = 'rgba(120,96,60,.35)'; g.lineWidth = 4;
+    g.beginPath(); g.moveTo(0,0); g.lineTo(256,190); g.lineTo(512,0); g.stroke();
+    g.beginPath(); g.moveTo(0,340); g.lineTo(210,165); g.moveTo(512,340); g.lineTo(302,165); g.stroke();
+    g.fillStyle = '#9E2B25'; g.beginPath(); g.arc(256,190,34,0,Math.PI*2); g.fill();
+    g.fillStyle = 'rgba(255,255,255,.18)'; g.beginPath(); g.arc(246,180,12,0,Math.PI*2); g.fill();
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
   })();
-  const paperMat = new THREE.MeshStandardMaterial({map:paperTex, roughness:.85, transparent:true});
-  const paperSide = new THREE.MeshStandardMaterial({color:0xE6E2DA, roughness:.9, transparent:true});
-  const sheets = [];
-  for(let i=0;i<20;i++){
-    const m = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2.0, .04),
-      [paperSide,paperSide,paperSide,paperSide,paperMat,paperSide]);
-    m.castShadow = true;
-    const ang = (i / 20) * Math.PI * 2;
-    m.userData = {
-      from: new THREE.Vector3(Math.cos(ang) * (9 + (i%4)), Math.sin(ang) * (7 + (i%3)), 5 + (i%5)*1.4),
-      mid:  new THREE.Vector3(Math.cos(ang*1.7) * 3.4, Math.sin(ang*1.3) * 2.6, 2.2 + (i%4)*.6),
-      to:   new THREE.Vector3((i%3 - 1) * 3.3 + (i%2 ? .25 : -.25), 2.2 - ((i*1.7) % 5.4), .07 + (i%5)*.015),
-      spin: new THREE.Euler((i%2?1:-1)*1.3, (i%3?-1:1)*1.1, (i%2?-1:1)*1.6),
-      d: (i % 10) * 0.035, ph: i * 1.37
-    };
-    board.add(m);
-    sheets.push(m);
+  const N = innerWidth < 700 ? 60 : 130;
+  const envGeo = new THREE.PlaneGeometry(1.25, 0.84, 10, 6);
+  const aPhase = new Float32Array(N), aBend = new Float32Array(N);
+  for(let i=0;i<N;i++){ aPhase[i] = Math.random()*6.28; aBend[i] = .8 + Math.random()*.7; }
+  envGeo.setAttribute('aPhase', new THREE.InstancedBufferAttribute(aPhase, 1));
+  envGeo.setAttribute('aBend', new THREE.InstancedBufferAttribute(aBend, 1));
+  const envMat = makeBendable(new THREE.MeshStandardMaterial({map:envTex, roughness:.8, side:THREE.DoubleSide}), true);
+  const envs = new THREE.InstancedMesh(envGeo, envMat, N);
+  envs.castShadow = true;
+  envs.frustumCulled = false;
+  scene.add(envs);
+  const envData = [];
+  for(let i=0;i<N;i++){
+    envData.push({
+      a: Math.random()*Math.PI*2,           /* угол по кругу */
+      r: 3 + Math.random()*7,               /* радиус вихря */
+      h: (Math.random()-.5) * 9,            /* высота */
+      z: -2 + Math.random()*10,             /* глубина: от доски до лица */
+      sp: (.15 + Math.random()*.35) * (Math.random()<.5?-1:1),
+      rx: Math.random()*6, ry: Math.random()*6, rz: Math.random()*6,
+      rs: .4 + Math.random()*1.2,
+      s: .7 + Math.random()*.6
+    });
   }
+  const dummy = new THREE.Object3D();
 
   /* карточки — плитки с толщиной */
   const CW = 2.8, CH = 1.34, CT = .12;
   const used = [0,0,0];
   const cards = CARDS.map((cfg, i) => {
-    const tex = cardTexture(cfg);
-    const side = new THREE.MeshStandardMaterial({color:cfg.c, roughness:.55, metalness:.02});
-    const face = new THREE.MeshStandardMaterial({map:tex, roughness:.5, metalness:.02});
-    const mesh = new THREE.Mesh(new THREE.BoxGeometry(CW, CH, CT),
+    const tex = cardTexture(cfg, renderer.capabilities.getMaxAnisotropy());
+    const side = makeBendable(new THREE.MeshStandardMaterial({color:cfg.c, roughness:.55, metalness:.02}));
+    const face = makeBendable(new THREE.MeshStandardMaterial({map:tex, roughness:.5, metalness:.02}));
+    face.userData.uBend = side.userData.uBend = {value:0};
+    face.userData.uPhase = side.userData.uPhase = {value: i*1.3};
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(CW, CH, CT, 14, 7, 1),
       [side, side, side, side, face, side]);
     mesh.castShadow = true;
     const slot = used[cfg.col]++;
@@ -552,27 +590,22 @@ function buildScene(){
     if(!visible) return;
     /* листы: метель по всему экрану → сходятся → укладываются и гаснут */
     const now = performance.now() / 1000;
-    sheets.forEach((m,i) => {
-      const u = m.userData;
-      const t = easeOut(clamp((p - u.d) / 0.62));
-      const k = 1 - t;
-      tmpA.lerpVectors(u.from, u.mid, easeOut(clamp(t*2)));
-      tmpB.lerpVectors(tmpA, u.to, easeOut(clamp((t - .45) / .55)));
-      /* лист планирует: его сносит вбок и качает, как настоящую бумагу */
-      const sway = Math.sin(now*1.1 + u.ph) * 0.9 * k;
-      const bobb = Math.cos(now*1.4 + u.ph*1.7) * 0.55 * k;
-      m.position.set(tmpB.x + sway, tmpB.y + bobb, tmpB.z + Math.sin(now*0.9 + u.ph)*0.35*k);
-      m.rotation.set(
-        u.spin.x*k + Math.sin(now*1.6 + u.ph)*0.5*k,
-        u.spin.y*k + Math.cos(now*1.2 + u.ph)*0.6*k,
-        u.spin.z*k + Math.sin(now*0.8 + u.ph*2)*0.45*k
-      );
-      const o = t < .1 ? t*10 : (t > .72 ? Math.max(0, 1 - (t-.72)/.22) : 1);
-      m.material.forEach ? m.material.forEach(mm => mm.opacity = o) : (m.material.opacity = o);
-      m.visible = o > .02;
-      const sc = .7 + .5*k;
-      m.scale.set(sc, sc, 1);
+    uTime.value = now;
+    /* вихрь конвертов: живёт всегда, с прокруткой расходится и улетает за край */
+    const out = easeOut(clamp((p - .35) / .5));      /* 0 — вихрь, 1 — улетели */
+    envData.forEach((e,i) => {
+      const a = e.a + now*e.sp;
+      const r = e.r + out*12;
+      dummy.position.set(Math.cos(a)*r, e.h + Math.sin(now*.6 + i)*0.6 + out*3*Math.sign(e.h||1), e.z + out*4);
+      dummy.rotation.set(e.rx + now*e.rs*.7, e.ry + now*e.rs*.5, e.rz + now*e.rs*.3);
+      const sc = e.s * (1 - out*.9);
+      dummy.scale.set(sc, sc, sc);
+      dummy.updateMatrix();
+      envs.setMatrixAt(i, dummy.matrix);
     });
+    envs.instanceMatrix.needsUpdate = true;
+    envs.visible = out < .995;
+
     const counts = [0,0,0];
     cards.forEach((o,i) => {
       const t = easeOut(clamp((p - i*0.055) / 0.46));
@@ -592,6 +625,7 @@ function buildScene(){
       );
       const sc = 1 + .14*k;
       o.mesh.scale.set(sc, sc, 1);
+      o.mesh.material[4].userData.uBend.value = k * 1.1;
       if(t > .6) counts[o.cfg.col]++;
     });
     counts.forEach((c,i) => { if(c !== lastCounts[i]){ counters[i].textContent = c; lastCounts[i] = c; } });
