@@ -1,7 +1,7 @@
 <title>Тимур Исхаков</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;600;800;900&family=Oswald:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Onest:wght@300;400;600;800;900&family=Oswald:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
 :root{
   --bg:#0A0B0D;--bg-2:#131518;--bg-3:#1B1E22;
@@ -68,13 +68,13 @@ h1 .out{color:transparent;-webkit-text-stroke:1.6px var(--ink)}
 
 /* липкая сцена: хаос → доска */
 .flow{position:relative;height:235vh}
-.stage{position:sticky;top:calc(54px + env(safe-area-inset-top,0px));height:calc(100svh - 54px - env(safe-area-inset-top,0px));display:flex;flex-direction:column;justify-content:center;overflow:hidden}
-.stage h2{margin:0 0 18px;text-shadow:0 8px 40px rgba(10,11,13,.95),0 2px 10px rgba(10,11,13,.9)}
+.stage{position:sticky;top:calc(54px + env(safe-area-inset-top,0px));height:calc(100svh - 54px - env(safe-area-inset-top,0px));display:flex;flex-direction:column;justify-content:flex-start;padding-top:clamp(14px,3vh,34px);overflow:hidden}
+.stage h2{font-size:clamp(1.8rem,4.2vw,3rem);margin:0 0 8px;text-shadow:0 8px 40px rgba(10,11,13,.95),0 2px 10px rgba(10,11,13,.9)}
 .stage .hint,.stage .colhead,.stage .legend{text-shadow:0 2px 12px rgba(10,11,13,.9)}
 .stage .hint{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin:0 0 20px;min-height:1.2em}
 .field{position:relative}
 .live{background:transparent;padding:0}
-.colhead{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(8px,1.4vw,14px)}
+.colhead{display:none}
 .chx{font-family:var(--mono);font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);display:flex;justify-content:space-between;gap:10px;padding:0 4px 10px;border-bottom:1px solid var(--line)}
 #scene{position:fixed;inset:0;width:100vw;height:100svh;display:block;z-index:0;pointer-events:none}
 .stage .wrap{position:relative;z-index:1}
@@ -87,7 +87,7 @@ h1 .out{color:transparent;-webkit-text-stroke:1.6px var(--ink)}
 .card small{display:block;margin-top:8px;font-family:var(--mono);font-size:.6rem;font-weight:500;letter-spacing:.05em;text-transform:uppercase;opacity:.55}
 .card .done-mark{position:absolute;right:10px;top:10px;width:13px;height:7px;border-left:2.4px solid var(--st-ink);border-bottom:2.4px solid var(--st-ink);transform:rotate(-45deg);opacity:0;transition:opacity 300ms ease}
 .card.done .done-mark{opacity:.7}
-.legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:16px;font-size:.8rem;color:var(--ink-2)}
+.legend{display:none}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--c);margin-right:6px;vertical-align:-1px}
 
 /* секции */
@@ -397,40 +397,55 @@ let renderFlow = () => {};          /* заменится, когда сцена
 
 /* ---- текст карточки рисуем в картинку ---- */
 function cardTexture(card, maxAniso){
-  const W = 1024, H = 520, c = document.createElement('canvas');
+  const W = 900, H = 900, c = document.createElement('canvas');
   c.width = W; c.height = H;
   const g = c.getContext('2d');
   const hex = '#' + card.c.toString(16).padStart(6,'0');
   g.fillStyle = hex; g.fillRect(0,0,W,H);
-  /* лёгкая фактура бумаги */
-  const grad = g.createLinearGradient(0,0,W,H);
-  grad.addColorStop(0,'rgba(255,255,255,.22)'); grad.addColorStop(1,'rgba(0,0,0,.06)');
-  g.fillStyle = grad; g.fillRect(0,0,W,H);
-  g.fillStyle = card.done ? 'rgba(20,21,23,.5)' : '#141517';
-  g.font = '800 66px Onest, "Helvetica Neue", Arial, sans-serif';
+  /* неровности бумаги */
+  for(let i=0;i<2600;i++){
+    g.fillStyle = 'rgba(0,0,0,' + (Math.random()*.02) + ')';
+    g.fillRect(Math.random()*W, Math.random()*H, 2, 2);
+  }
+  const sh = g.createLinearGradient(0,0,0,H);
+  sh.addColorStop(0,'rgba(255,255,255,.18)');
+  sh.addColorStop(.55,'rgba(255,255,255,0)');
+  sh.addColorStop(1,'rgba(0,0,0,.10)');
+  g.fillStyle = sh; g.fillRect(0,0,W,H);
+
+  g.fillStyle = card.done ? 'rgba(28,32,46,.55)' : '#1C2038';
+  g.font = '600 78px Caveat, "Comic Sans MS", cursive';
   g.textBaseline = 'top';
   const words = card.text.split(' ');
-  let line = '', y = 60, lastW = 0;
+  let line = '', y = 180, lastW = 0, lines = [];
   for(const w of words){
     const t = line ? line + ' ' + w : w;
-    if(g.measureText(t).width > W - 150){ g.fillText(line, 64, y); y += 82; line = w; }
-    else line = t;
+    if(g.measureText(t).width > W - 220){ lines.push(line); line = w; } else line = t;
   }
-  g.fillText(line, 64, y); lastW = g.measureText(line).width;
+  lines.push(line);
+  y = 260 - lines.length*46;
+  lines.forEach((ln,k) => {
+    g.save();
+    g.translate(130, y + k*92);
+    g.rotate((Math.random()-.5) * 0.012);     /* строки чуть косые, как от руки */
+    g.fillText(ln, 0, 0);
+    lastW = g.measureText(ln).width;
+    g.restore();
+  });
   if(card.done){
-    g.strokeStyle = 'rgba(20,21,23,.55)'; g.lineWidth = 6;
-    g.beginPath(); g.moveTo(64, y + 38); g.lineTo(64 + lastW, y + 38); g.stroke();
-    g.lineWidth = 12;
-    g.beginPath(); g.moveTo(W-150, 84); g.lineTo(W-114, 120); g.lineTo(W-50, 50); g.stroke();
+    g.strokeStyle = 'rgba(28,32,46,.5)'; g.lineWidth = 6;
+    g.beginPath();
+    g.moveTo(130, y + (lines.length-1)*92 + 58);
+    g.lineTo(130 + lastW, y + (lines.length-1)*92 + 50);
+    g.stroke();
   }
-  g.fillStyle = 'rgba(20,21,23,.55)';
-  g.font = '600 34px "JetBrains Mono", Menlo, monospace';
-  g.fillText(card.tag.toUpperCase(), 64, H - 88);
+  g.fillStyle = 'rgba(28,32,46,.45)';
+  g.font = '500 44px Caveat, cursive';
+  g.fillText(card.tag, 130, H - 210);
+
   const tex = new THREE.CanvasTexture(c);
   tex.anisotropy = maxAniso || 8;
   tex.colorSpace = THREE.SRGBColorSpace;
-  tex.generateMipmaps = true;
-  tex.minFilter = THREE.LinearMipmapLinearFilter;
   return tex;
 }
 
@@ -462,7 +477,7 @@ function buildScene(){
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
-  camera.position.set(0, 0.1, 16.5);
+  camera.position.set(0, 0.1, 17.6);
 
   scene.add(new THREE.AmbientLight(0xffffff, 0.55));
   const key = new THREE.DirectionalLight(0xfff3d0, 1.5);
@@ -478,19 +493,75 @@ function buildScene(){
   /* доска — наклонённый стол */
   const board = new THREE.Group();
   board.rotation.x = -0.30;
+  board.position.y = -0.55;
   scene.add(board);
 
-  const deskMat = new THREE.MeshStandardMaterial({color:0x16181c, roughness:.95, metalness:0});
+  /* пробка: точно как его доска — крошка, тёплый цвет */
+  const corkTex = (() => {
+    const c = document.createElement('canvas'); c.width = 1024; c.height = 768;
+    const g = c.getContext('2d');
+    g.fillStyle = '#C89A5E'; g.fillRect(0,0,1024,768);
+    for(let i=0;i<52000;i++){
+      const r = Math.random();
+      g.fillStyle = r < .33 ? 'rgba(122,84,44,.5)' : (r < .66 ? 'rgba(214,176,124,.45)' : 'rgba(90,62,32,.35)');
+      const w = 2 + Math.random()*7, h = 2 + Math.random()*5;
+      g.save();
+      g.translate(Math.random()*1024, Math.random()*768);
+      g.rotate(Math.random()*3.14);
+      g.fillRect(0, 0, w, h);
+      g.restore();
+    }
+    const v = g.createRadialGradient(512,384,120, 512,384,700);
+    v.addColorStop(0,'rgba(255,230,190,.10)'); v.addColorStop(1,'rgba(40,24,8,.28)');
+    g.fillStyle = v; g.fillRect(0,0,1024,768);
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+  })();
+  const deskMat = new THREE.MeshStandardMaterial({map:corkTex, roughness:1, metalness:0});
   const desk = new THREE.Mesh(new THREE.BoxGeometry(10.2, 7.4, .3), deskMat);
   desk.position.z = -.16; desk.receiveShadow = true;
   board.add(desk);
 
-  const colMat = new THREE.MeshStandardMaterial({color:0x1d2126, roughness:.9});
   const COLX = [-3.3, 0, 3.3];
-  COLX.forEach(x => {
-    const col = new THREE.Mesh(new THREE.BoxGeometry(3.05, 6.8, .06), colMat);
-    col.position.set(x, 0, .02); col.receiveShadow = true;
-    board.add(col);
+
+  /* деревянная рама по периметру */
+  const woodTex = (() => {
+    const c = document.createElement('canvas'); c.width = 512; c.height = 64;
+    const g = c.getContext('2d');
+    g.fillStyle = '#C9A06A'; g.fillRect(0,0,512,64);
+    for(let i=0;i<220;i++){
+      g.strokeStyle = 'rgba(120,84,44,' + (0.05 + Math.random()*0.12) + ')';
+      g.lineWidth = 1 + Math.random()*2;
+      const y = Math.random()*64;
+      g.beginPath(); g.moveTo(0, y); g.bezierCurveTo(170, y + (Math.random()-.5)*8, 340, y + (Math.random()-.5)*8, 512, y); g.stroke();
+    }
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+  })();
+  const woodMat = new THREE.MeshStandardMaterial({map:woodTex, roughness:.75, metalness:.02});
+  const FW = 10.2, FH = 7.4, FT = .44;
+  [[0, FH/2 + FT/2, FW + FT*2, FT], [0, -FH/2 - FT/2, FW + FT*2, FT],
+   [-FW/2 - FT/2, 0, FT, FH], [FW/2 + FT/2, 0, FT, FH]].forEach(([x,y,w,h]) => {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, .44), woodMat);
+    m.position.set(x, y, .04); m.castShadow = true; m.receiveShadow = true; board.add(m);
+  });
+
+  /* заголовки колонок — стикеры сверху, как у него на доске */
+  ['Нужно сделать','Сегодня','Сделано'].forEach((title, k) => {
+    const c = document.createElement('canvas'); c.width = 900; c.height = 420;
+    const g = c.getContext('2d');
+    g.fillStyle = k === 2 ? '#BFE3A6' : '#F4EFA3'; g.fillRect(0,0,900,420);
+    g.fillStyle = 'rgba(0,0,0,.05)'; for(let i=0;i<900;i++) g.fillRect(Math.random()*900, Math.random()*420, 2, 2);
+    g.fillStyle = '#1C2038'; g.font = '700 110px Caveat, cursive'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(title, 450, 230);
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+    const side = new THREE.MeshStandardMaterial({color: k === 2 ? 0xBFE3A6 : 0xF4EFA3, roughness:.7});
+    const face = new THREE.MeshStandardMaterial({map:t, roughness:.7});
+    const head = new THREE.Mesh(new THREE.BoxGeometry(2.3, 1.05, .04), [side,side,side,side,face,side]);
+    head.position.set(COLX[k], 3.12, .05);
+    head.rotation.z = (k - 1) * 0.02;
+    head.castShadow = true;
+    const pin = new THREE.Mesh(new THREE.SphereGeometry(.11, 16, 12), new THREE.MeshStandardMaterial({color:0xD9B382, roughness:.55}));
+    pin.scale.set(1,1,.75); pin.position.set(0, .3, .07); pin.castShadow = true; head.add(pin);
+    board.add(head);
   });
 
   /* письма: как в «Гарри Поттере» — сотня конвертов, гнутся и планируют */
@@ -532,7 +603,7 @@ function buildScene(){
   const dummy = new THREE.Object3D();
 
   /* карточки — плитки с толщиной */
-  const CW = 2.8, CH = 1.34, CT = .12;
+  const CW = 1.95, CH = 1.95, CT = .05;
   const used = [0,0,0];
   const cards = CARDS.map((cfg, i) => {
     const tex = cardTexture(cfg, renderer.capabilities.getMaxAnisotropy());
@@ -540,11 +611,18 @@ function buildScene(){
     const face = makeBendable(new THREE.MeshStandardMaterial({map:tex, roughness:.5, metalness:.02}));
     face.userData.uBend = side.userData.uBend = {value:0};
     face.userData.uPhase = side.userData.uPhase = {value: i*1.3};
-    const mesh = new THREE.Mesh(new THREE.BoxGeometry(CW, CH, CT, 14, 7, 1),
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(CW, CH, CT, 16, 16, 1),
       [side, side, side, side, face, side]);
     mesh.castShadow = true;
+    /* деревянная кнопка сверху, как на настоящей доске */
+    const pinMat = new THREE.MeshStandardMaterial({color:0xD9B382, roughness:.55});
+    const pin = new THREE.Mesh(new THREE.SphereGeometry(.13, 18, 14), pinMat);
+    pin.scale.set(1, 1, .75);
+    pin.position.set(0, CH/2 - .2, CT/2 + .07);
+    pin.castShadow = true;
+    mesh.add(pin);
     const slot = used[cfg.col]++;
-    const to = new THREE.Vector3(COLX[cfg.col], 2.15 - slot*1.55, CT/2 + .05);
+    const to = new THREE.Vector3(COLX[cfg.col], 1.5 - slot*2.08, CT/2 + .04);
     const from = new THREE.Vector3(
       COLX[cfg.col] + (i%2 ? 2.6 : -2.8) + (i*0.35 - 1.1),
       2.0 - ((i*1.5) % 4.4) - 0.8,
@@ -646,7 +724,7 @@ function buildScene(){
       focusW += (bestW - focusW) * .08;
     } else {
       lookWant = tmpA.set(0, 0, 0);
-      camWant = tmpB.set(0, 0.1, 16.5);
+      camWant = tmpB.set(0, 0.1, 17.6);
       focusW += (0 - focusW) * .08;
     }
     camera.position.lerp(camWant, .06);
@@ -666,7 +744,15 @@ function buildScene(){
 (function(){
   const s = document.createElement('script');
   s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js';
-  s.onload = () => { try { buildScene(); } catch(e){ canvas.style.display = 'none'; } };
+  s.onload = () => {
+    const go = () => { try { buildScene(); } catch(e){ console.error('3D-сцена не собралась:', e); canvas.style.display = 'none'; } };
+    const f = document.fonts;
+    if(f && f.load) Promise.race([
+      Promise.all([f.load('600 78px Caveat'), f.load('700 110px Caveat')]),
+      new Promise(r => setTimeout(r, 2500))
+    ]).then(go, go);
+    else go();
+  };
   s.onerror = () => { canvas.style.display = 'none'; };
   document.head.appendChild(s);
 })();
