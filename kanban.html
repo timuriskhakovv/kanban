@@ -834,6 +834,147 @@ body.sb-open .legend-bar { margin-left: 160px; }
 .sync-ok  { background: rgba(80,200,120,0.18); color: #5dba7d; }
 .sync-ing { background: rgba(255,200,60,0.18);  color: #c9a825; }
 .sync-err { background: rgba(220,80,80,0.18);   color: #d05050; }
+
+/* ── ПРОБКОВАЯ ДОСКА (свободный холст) ───────────────── */
+.cork-ov {
+  position: fixed; inset: 0; z-index: 150;
+  display: none; flex-direction: column;
+  background: #2a1d12;
+}
+.cork-ov.show { display: flex; }
+.cork-bar {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 10px 14px;
+  background: linear-gradient(180deg, #4a3220, #3a2717);
+  border-bottom: 1px solid rgba(0,0,0,0.4);
+  color: #f3e6d3;
+}
+.cork-tabs { display: flex; gap: 4px; background: rgba(0,0,0,0.25); padding: 3px; border-radius: 10px; }
+.cork-tab {
+  border: none; background: transparent; color: #e8d6bd;
+  font: 600 12px/1 inherit; font-family: inherit;
+  padding: 8px 12px; border-radius: 8px; cursor: pointer;
+  transition: background-color 160ms ease, transform 160ms ease-out;
+}
+.cork-tab.on { background: #f3e6d3; color: #3a2717; }
+.cork-tab:active, .cork-btn:active { transform: scale(0.97); }
+.cork-sp { flex: 1; }
+.cork-btn {
+  border: none; background: rgba(255,255,255,0.1); color: #f3e6d3;
+  font: 600 12px/1 inherit; font-family: inherit;
+  padding: 8px 12px; border-radius: 8px; cursor: pointer;
+  transition: background-color 160ms ease, transform 160ms ease-out;
+}
+.cork-btn.main { background: #f3e6d3; color: #3a2717; }
+@media (hover: hover) and (pointer: fine) {
+  .cork-btn:hover { background: rgba(255,255,255,0.18); }
+  .cork-btn.main:hover { background: #fff4e4; }
+}
+.cork-zoomval { min-width: 44px; text-align: center; font: 600 12px/1 inherit; font-family: inherit; color: #e8d6bd; }
+
+/* Деревянная рама + пробка */
+.cork-frame {
+  flex: 1; min-height: 0; position: relative;
+  padding: 14px;
+  background:
+    repeating-linear-gradient(90deg, rgba(0,0,0,0.06) 0 2px, transparent 2px 9px),
+    linear-gradient(180deg, #8a5a33, #6d4424 60%, #5c381d);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.35);
+}
+.cork-view {
+  position: absolute; inset: 14px; overflow: auto;
+  border-radius: 3px;
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.45), inset 0 0 0 1px rgba(0,0,0,0.3);
+  background-color: #c0915f;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.35  0 0 0 0 0.2  0 0 0 0 0.08  0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E"),
+    radial-gradient(circle at 20% 30%, rgba(255,220,170,0.18), transparent 55%),
+    radial-gradient(circle at 80% 70%, rgba(90,50,20,0.18), transparent 50%);
+  touch-action: pan-x pan-y;
+}
+.cork-sizer { position: relative; }
+.cork-canvas { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+
+.cork-zone {
+  position: absolute; border-radius: 10px;
+  background: rgba(60,30,10,0.07);
+  border: 2px dashed rgba(255,245,230,0.28);
+  pointer-events: none;
+}
+.cork-zone.hot { background: rgba(255,245,230,0.12); border-color: rgba(255,245,230,0.6); }
+.cork-zlabel {
+  position: absolute; top: -14px; left: 50%;
+  transform: translateX(-50%) rotate(var(--r,0deg));
+  background: #fffaf0; color: #3a2717;
+  font: 700 13px/1.2 inherit; font-family: inherit;
+  padding: 9px 16px 8px; border-radius: 2px; white-space: nowrap;
+  box-shadow: 1px 2px 5px rgba(0,0,0,0.3);
+}
+.cork-zlabel::before {
+  content: ''; position: absolute; top: -5px; left: 50%; margin-left: -6px;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #ff8a8a, #c62828 60%, #7a1010);
+  box-shadow: 0 2px 3px rgba(0,0,0,0.4);
+}
+.cork-zcnt { opacity: 0.45; margin-left: 6px; font-weight: 600; }
+
+.cork-stk {
+  position: absolute; left: 0; top: 0; width: 170px; min-height: 120px;
+  border-radius: 2px 2px 4px 4px;
+  box-shadow: 2px 4px 10px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+  cursor: grab; user-select: none; -webkit-user-select: none;
+  touch-action: none;
+  transition: box-shadow 200ms ease-out;
+}
+.cork-stk.lift {
+  cursor: grabbing;
+  box-shadow: 10px 18px 28px rgba(0,0,0,0.38), 0 2px 4px rgba(0,0,0,0.2);
+}
+.cork-stk.settle { transition: transform 260ms cubic-bezier(0.23,1,0.32,1), box-shadow 200ms ease-out; }
+.cork-stk::before {
+  content: ''; position: absolute; top: -6px; left: 50%; margin-left: -8px;
+  width: 16px; height: 16px; border-radius: 50%; z-index: 2;
+  background: radial-gradient(circle at 35% 35%, var(--pinl,#ffb3b3), var(--pin,#d32f2f) 60%, rgba(0,0,0,0.55));
+  box-shadow: 0 3px 4px rgba(0,0,0,0.45);
+}
+.cork-stk::after {
+  content: ''; position: absolute; bottom: 0; right: 0; width: 14px; height: 14px;
+  background: linear-gradient(225deg, rgba(0,0,0,0.13) 50%, transparent 50%);
+}
+.cork-txt {
+  padding: 16px 12px 18px; font-size: 13px; line-height: 1.45;
+  color: rgba(0,0,0,0.78); white-space: pre-wrap; word-break: break-word;
+  min-height: 86px;
+}
+.cork-txt.empty { color: rgba(0,0,0,0.3); }
+.cork-stk textarea {
+  display: block; width: 100%; min-height: 100px; border: none; outline: none; resize: none;
+  background: transparent; font: 13px/1.45 inherit; font-family: inherit;
+  color: rgba(0,0,0,0.8); padding: 16px 12px 18px; cursor: text;
+}
+.cork-dots {
+  position: absolute; top: 5px; right: 5px; z-index: 3;
+  border: none; background: rgba(0,0,0,0.08); color: rgba(0,0,0,0.45);
+  font: 700 12px/1 inherit; font-family: inherit; padding: 3px 6px; border-radius: 4px; cursor: pointer;
+  opacity: 0; transition: opacity 150ms ease;
+}
+.cork-stk:hover .cork-dots, .cork-dots.vis { opacity: 1; }
+@media (hover: none) { .cork-dots { opacity: 1; } }
+.cork-hint {
+  position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%);
+  background: rgba(30,20,10,0.8); color: #f3e6d3; font-size: 12px;
+  padding: 8px 14px; border-radius: 20px; pointer-events: none;
+  transition: opacity 300ms ease; white-space: nowrap;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cork-stk.settle { transition: box-shadow 200ms ease-out; }
+}
+@media (max-width: 640px) {
+  .cork-bar { padding: 8px 10px; gap: 6px; }
+  .cork-frame { padding: 8px; }
+  .cork-view { inset: 8px; }
+  .cork-hint { white-space: normal; width: 80%; text-align: center; }
+}
 </style>
 </head>
 <body>
@@ -854,6 +995,7 @@ body.sb-open .legend-bar { margin-left: 160px; }
       <span class="user-avatar" id="userAvatar" style="background:#ccc">?</span>
       <span id="userBtnName">Выбрать</span>
     </button>
+    <button class="hdr-btn" onclick="openCork()">📌 Пробка</button>
     <button class="hdr-btn" id="balBtn" onclick="openBalance()">◎ Колесо баланса</button>
     <button class="hdr-btn" onclick="openArchive()">🗂 Архив</button>
     <button class="hdr-btn" onclick="openSettings()">⚙ Категории</button>
@@ -1070,6 +1212,24 @@ body.sb-open .legend-bar { margin-left: 160px; }
     <div class="m-actions">
       <button class="btn-cancel" onclick="closeOv('ovMonthClose')">Отмена</button>
     </div>
+  </div>
+</div>
+
+
+<!-- Пробковая доска -->
+<div class="cork-ov" id="corkOv">
+  <div class="cork-bar">
+    <div class="cork-tabs" id="corkTabs"></div>
+    <span class="cork-sp"></span>
+    <button class="cork-btn" onclick="corkZoom(-0.1)" title="Меньше">−</button>
+    <span class="cork-zoomval" id="corkZoomVal">100%</span>
+    <button class="cork-btn" onclick="corkZoom(0.1)" title="Больше">+</button>
+    <button class="cork-btn" onclick="corkAdd()">+ Стикер</button>
+    <button class="cork-btn main" onclick="closeCork()">▦ Колонки</button>
+  </div>
+  <div class="cork-frame">
+    <div class="cork-view" id="corkView"><div class="cork-sizer" id="corkSizer"><div class="cork-canvas" id="corkCanvas"></div></div></div>
+    <div class="cork-hint" id="corkHint">Тяни стикер куда хочешь · нажми — чтобы написать</div>
   </div>
 </div>
 
@@ -2747,6 +2907,174 @@ initFirebase();
 if (!getCurrentUser()) {
   setTimeout(() => openUserModal(), 600);
 }
+</script>
+<script>
+// ── ПРОБКОВАЯ ДОСКА: те же карточки, свободное размещение ──────────
+// Колонки превращаются в зоны на пробке. Стикер можно положить в любое
+// место; в какую зону попал центр стикера — в той колонке он и числится.
+// Позиция хранится в карточке (cx, cy) и уезжает в облако вместе со всем S.
+const CORK = { open:false, sec:'month', scale:1, drag:null, pendingRender:false };
+const CZ = { PAD:40, TOP:80, W:240, GAP:26, H:1500, SW:170 };
+const CORK_PINS = [['#ffb3b3','#d32f2f'],['#b3d4ff','#1e5fbf'],['#c8f0b3','#2e7d32'],['#ffe6a3','#e0a100'],['#e3c4ff','#7b3fc4']];
+
+function corkCols(){ return (SECTIONS.find(s=>s.id===CORK.sec)||SECTIONS[1]).cols; }
+function corkZone(i){ return { x: CZ.PAD + i*(CZ.W+CZ.GAP), y: CZ.TOP, w: CZ.W, h: CZ.H - CZ.TOP - 40 }; }
+function corkWidth(){ const n=corkCols().length; return CZ.PAD*2 + n*CZ.W + (n-1)*CZ.GAP; }
+function corkPin(id){ let h=0; for(const ch of String(id)) h=(h*31+ch.charCodeAt(0))|0; return CORK_PINS[Math.abs(h)%CORK_PINS.length]; }
+
+function corkZoneAt(cx){
+  const cols=corkCols();
+  for(let i=0;i<cols.length;i++){ const z=corkZone(i); if(cx < z.x+z.w+CZ.GAP/2) return i; }
+  return cols.length-1;
+}
+function corkInZone(card, i){
+  const z=corkZone(i);
+  if(typeof card.cx!=='number'||typeof card.cy!=='number') return false;
+  const mid=card.cx+CZ.SW/2;
+  return mid>=z.x-CZ.GAP/2 && mid<=z.x+z.w+CZ.GAP/2 && card.cy>=0 && card.cy<=CZ.H;
+}
+
+function openCork(sec){
+  if(sec) CORK.sec=sec;
+  CORK.open=true;
+  CORK.scale = S.corkScale || (window.innerWidth<700 ? 0.7 : 1);
+  document.getElementById('corkOv').classList.add('show');
+  document.body.style.overflow='hidden';
+  corkRender();
+  const hint=document.getElementById('corkHint');
+  if(hint){ hint.style.opacity=1; clearTimeout(hint._t); hint._t=setTimeout(()=>hint.style.opacity=0,3500); }
+}
+function closeCork(){
+  CORK.open=false;
+  document.getElementById('corkOv').classList.remove('show');
+  document.body.style.overflow='';
+  render();
+}
+function corkTab(sec){ CORK.sec=sec; corkRender(); document.getElementById('corkView').scrollTo(0,0); }
+function corkZoom(d){
+  CORK.scale=Math.max(0.4,Math.min(1.5,+(CORK.scale+d).toFixed(2)));
+  S.corkScale=CORK.scale; save(); corkRender();
+}
+function corkAdd(){ openNew(corkCols()[0].id); }
+
+function corkRender(){
+  if(!CORK.open) return;
+  if(CORK.drag){ CORK.pendingRender=true; return; }
+  // вкладки
+  const tabs=document.getElementById('corkTabs'); tabs.innerHTML='';
+  SECTIONS.forEach(s=>{
+    const b=document.createElement('button'); b.className='cork-tab'+(s.id===CORK.sec?' on':'');
+    b.textContent=S.secNames[s.id]||s.id; b.onclick=()=>corkTab(s.id); tabs.appendChild(b);
+  });
+  document.getElementById('corkZoomVal').textContent=Math.round(CORK.scale*100)+'%';
+
+  const W=corkWidth(), H=CZ.H;
+  const sizer=document.getElementById('corkSizer'), cv=document.getElementById('corkCanvas');
+  sizer.style.width=(W*CORK.scale)+'px'; sizer.style.height=(H*CORK.scale)+'px';
+  cv.style.width=W+'px'; cv.style.height=H+'px'; cv.style.transform=`scale(${CORK.scale})`;
+  cv.innerHTML='';
+
+  const cols=corkCols();
+  cols.forEach((col,i)=>{
+    const z=corkZone(i), cards=S.cards.filter(c=>c.col===col.id);
+    const ze=document.createElement('div'); ze.className='cork-zone'; ze.dataset.i=i;
+    ze.style.cssText=`left:${z.x}px;top:${z.y}px;width:${z.w}px;height:${z.h}px`;
+    const lb=document.createElement('div'); lb.className='cork-zlabel';
+    lb.style.setProperty('--r',((i%2?1:-1)*1.2)+'deg');
+    lb.innerHTML=esc(S.colTitles[col.id]||col.title)+`<span class="cork-zcnt">${cards.length}</span>`;
+    ze.appendChild(lb); cv.appendChild(ze);
+
+    // карточки без своего места раскладываем столбиком внутри зоны
+    let k=0;
+    cards.forEach(card=>{
+      let x,y;
+      if(corkInZone(card,i)){ x=card.cx; y=card.cy; }
+      else { x=z.x+(z.w-CZ.SW)/2+((k%2)?8:-8); y=z.y+40+k*138; k++; }
+      cv.appendChild(corkStk(card,x,y,col));
+    });
+  });
+}
+
+function corkStk(card,x,y,col){
+  const c=cat(card.catId), pin=corkPin(card.id);
+  const el=document.createElement('div'); el.className='cork-stk'; el.dataset.id=card.id;
+  el.style.background=c.color;
+  el.style.setProperty('--pin',pin[1]); el.style.setProperty('--pinl',pin[0]);
+  el._x=x; el._y=y; el._r=card.rot||0;
+  el.style.transform=`translate(${x}px,${y}px) rotate(${el._r}deg)`;
+  if(card._z) el.style.zIndex=card._z;
+
+  const t=document.createElement('div'); t.className='cork-txt'+(card.text?'':' empty');
+  t.textContent=card.text||'Пусто — нажми, чтобы написать'; el.appendChild(t);
+
+  const dots=document.createElement('button'); dots.className='cork-dots'; dots.textContent='···';
+  dots.addEventListener('pointerdown',e=>e.stopPropagation());
+  dots.addEventListener('click',e=>{ e.stopPropagation(); showCardPopup(card.id,CORK.sec,!!col.done,dots); });
+  el.appendChild(dots);
+
+  el.addEventListener('pointerdown',e=>corkDown(e,el,card));
+  return el;
+}
+
+let corkTop=10;
+function corkDown(e,el,card){
+  if(e.button!==undefined && e.button!==0) return;
+  if(CORK.drag || el.querySelector('textarea')) return; // второй палец и режим правки — игнор
+  e.preventDefault();
+  CORK.drag={ el, card, id:e.pointerId, sx:e.clientX, sy:e.clientY, ox:el._x, oy:el._y, moved:false };
+  el.setPointerCapture(e.pointerId);
+  el.addEventListener('pointermove',corkMove);
+  el.addEventListener('pointerup',corkUp);
+  el.addEventListener('pointercancel',corkUp);
+}
+function corkMove(e){
+  const d=CORK.drag; if(!d||e.pointerId!==d.id) return;
+  const dx=(e.clientX-d.sx)/CORK.scale, dy=(e.clientY-d.sy)/CORK.scale;
+  if(!d.moved){
+    if(Math.hypot(dx,dy)<5) return;
+    d.moved=true; d.el.classList.remove('settle'); d.el.classList.add('lift');
+    d.el.style.zIndex=++corkTop+1000;
+  }
+  const W=corkWidth();
+  d.x=Math.max(0,Math.min(W-CZ.SW,d.ox+dx)); d.y=Math.max(0,Math.min(CZ.H-130,d.oy+dy));
+  d.el.style.transform=`translate(${d.x}px,${d.y}px) rotate(0deg) scale(1.04)`;
+  const zi=corkZoneAt(d.x+CZ.SW/2);
+  document.querySelectorAll('#corkCanvas .cork-zone').forEach(z=>z.classList.toggle('hot',+z.dataset.i===zi));
+}
+function corkUp(e){
+  const d=CORK.drag; if(!d||e.pointerId!==d.id) return;
+  d.el.removeEventListener('pointermove',corkMove);
+  d.el.removeEventListener('pointerup',corkUp);
+  d.el.removeEventListener('pointercancel',corkUp);
+  CORK.drag=null;
+  document.querySelectorAll('#corkCanvas .cork-zone.hot').forEach(z=>z.classList.remove('hot'));
+  if(!d.moved){ corkEdit(d.el,d.card); flushCork(); return; }
+  const card=d.card, col=corkCols()[corkZoneAt(d.x+CZ.SW/2)];
+  card.cx=Math.round(d.x); card.cy=Math.round(d.y); card._z=corkTop+1000;
+  const changed = col && card.col!==col.id;
+  if(col) card.col=col.id;
+  d.el._x=card.cx; d.el._y=card.cy;
+  d.el.classList.remove('lift'); d.el.classList.add('settle');
+  d.el.style.transform=`translate(${card.cx}px,${card.cy}px) rotate(${d.el._r}deg)`;
+  save();
+  if(changed || CORK.pendingRender) setTimeout(()=>{ CORK.pendingRender=false; corkRender(); },280);
+}
+function flushCork(){ if(CORK.pendingRender){ CORK.pendingRender=false; corkRender(); } }
+
+function corkEdit(el,card){
+  const t=el.querySelector('.cork-txt'); if(!t) return;
+  const ta=document.createElement('textarea'); ta.value=card.text||''; ta.placeholder='Что нужно сделать?';
+  ta.addEventListener('pointerdown',e=>e.stopPropagation());
+  ta.addEventListener('input',()=>{ card.text=ta.value; save(); ta.style.height='1px'; ta.style.height=ta.scrollHeight+'px'; });
+  ta.addEventListener('blur',()=>{ const nt=document.createElement('div'); nt.className='cork-txt'+(card.text?'':' empty'); nt.textContent=card.text||'Пусто — нажми, чтобы написать'; ta.replaceWith(nt); flushCork(); });
+  t.replaceWith(ta); ta.focus(); ta.style.height=ta.scrollHeight+'px';
+  ta.setSelectionRange(ta.value.length,ta.value.length);
+}
+
+// Любая перерисовка доски (новая карточка, удаление, облако) обновляет и пробку
+const _renderBase=render;
+render=function(){ _renderBase(); if(CORK.open && !document.querySelector('#corkCanvas textarea')) corkRender(); };
+document.addEventListener('keydown',e=>{ if(e.key==='Escape' && CORK.open && !document.querySelector('.overlay.show,#cardPopup.show')) closeCork(); });
 </script>
 </body>
 </html>
