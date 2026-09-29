@@ -1,11 +1,16 @@
-<title>Тимур Исхаков</title>
+<!doctype html>
+<html lang="ru">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A0B0D">
+<title>Тимур Исхаков · порядок в голове</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Onest:wght@300;400;600;800;900&family=Oswald:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
 :root{
   --bg:#0A0B0D;--bg-2:#131518;--bg-3:#1B1E22;
-  --ink:#F4F4F1;--ink-2:#9CA0A6;--line:rgba(244,244,241,.14);
+  --ink:#F4F4F1;--ink-2:#C9CCD1;--line:rgba(244,244,241,.14);
   --accent:#FFE27A;--glass:rgba(10,11,13,.72);
   --st-green:#BFE3A6;--st-yellow:#FFE27A;--st-pink:#F9B9C9;--st-blue:#AFCDF5;--st-orange:#FFC99A;
   --st-ink:#141517;
@@ -54,7 +59,7 @@ h1 .ln i{display:block;font-style:normal;transform:translateY(106%);animation:ri
 h1 .ln:nth-child(2) i{animation-delay:130ms}
 h1 .out{color:transparent;-webkit-text-stroke:1.6px var(--ink)}
 @keyframes rise{to{transform:none}}
-.sub{font-weight:300;font-size:clamp(1.08rem,2vw,1.42rem);line-height:1.42;color:var(--ink-2);max-width:42ch;margin:26px 0 0}
+.sub{font-weight:400;font-size:clamp(1.08rem,2vw,1.42rem);line-height:1.42;color:var(--ink-2);max-width:42ch;margin:26px 0 0}
 .sub b{color:var(--ink);font-weight:600}
 .row{display:flex;flex-wrap:wrap;gap:12px;margin-top:32px}
 .hero .kicker,.hero .sub,.hero .row{animation:up 820ms var(--ease) both}
@@ -63,7 +68,7 @@ h1 .out{color:transparent;-webkit-text-stroke:1.6px var(--ink)}
 
 /* бегущая строка */
 .marquee{margin-top:clamp(28px,5vw,52px);border-block:1px solid var(--line);overflow:hidden;padding-block:12px}
-.marquee .track{display:flex;gap:44px;width:max-content;font-family:var(--mono);font-size:.76rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);will-change:transform}
+.marquee .track{display:flex;gap:44px;width:max-content;font-family:var(--mono);font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);will-change:transform}
 .marquee b{color:var(--accent);font-weight:500}
 
 /* липкая сцена: хаос → доска */
@@ -71,7 +76,7 @@ h1 .out{color:transparent;-webkit-text-stroke:1.6px var(--ink)}
 .stage{position:sticky;top:calc(54px + env(safe-area-inset-top,0px));height:calc(100svh - 54px - env(safe-area-inset-top,0px));display:flex;flex-direction:column;justify-content:flex-start;padding-top:clamp(14px,3vh,34px);overflow:hidden}
 .stage h2{font-size:clamp(1.8rem,4.2vw,3rem);margin:0 0 8px;text-shadow:0 8px 40px rgba(10,11,13,.95),0 2px 10px rgba(10,11,13,.9)}
 .stage .hint,.stage .colhead,.stage .legend{text-shadow:0 2px 12px rgba(10,11,13,.9)}
-.stage .hint{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin:0 0 20px;min-height:1.2em}
+.stage .hint{font-family:var(--mono);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin:0 0 20px;min-height:1.2em}
 .field{position:relative}
 .live{background:transparent;padding:0}
 .colhead{display:none}
@@ -92,9 +97,11 @@ h1 .out{color:transparent;-webkit-text-stroke:1.6px var(--ink)}
 
 /* секции */
 section{padding-block:clamp(56px,9vw,112px);position:relative;z-index:1}
-.watch .wrap{background:rgba(10,11,13,.62);-webkit-backdrop-filter:blur(14px) saturate(140%);backdrop-filter:blur(14px) saturate(140%);border-radius:28px;padding-block:clamp(26px,4vw,44px);box-shadow:inset 0 0 0 1px var(--line)}
+.watch .wrap{background:rgba(12,13,15,.9);-webkit-backdrop-filter:blur(14px) saturate(140%);backdrop-filter:blur(14px) saturate(140%);border-radius:28px;padding-block:clamp(26px,4vw,44px);box-shadow:inset 0 0 0 1px var(--line)}
 .hero,.nav,footer{position:relative;z-index:2}
-.hero{background:linear-gradient(180deg,rgba(10,11,13,.86),rgba(10,11,13,.55))}
+.hero{background:linear-gradient(90deg,rgba(10,11,13,.94) 0%,rgba(10,11,13,.9) 52%,rgba(10,11,13,.45) 78%,rgba(10,11,13,.3) 100%)}
+.hero .sub,.hero .kicker{text-shadow:0 2px 14px rgba(10,11,13,.95)}
+@media(max-width:760px){.hero{background:rgba(10,11,13,.9)}}
 footer{background:rgba(10,11,13,.86)}
 .rule{border-top:0}
 h2{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:clamp(2rem,6vw,4.2rem);line-height:.92;margin:0 0 24px;text-wrap:balance}
@@ -102,7 +109,7 @@ h2 .w{display:inline-block;vertical-align:bottom}
 h2 .w i{display:inline-block;font-style:normal;opacity:.14;transform:translateY(8px);will-change:opacity,transform}
 .no-js h2 .w i{opacity:1;transform:none}
 h3{font-family:var(--display);text-transform:uppercase;font-weight:600}
-.big{font-size:clamp(1.12rem,2.2vw,1.42rem);line-height:1.45;font-weight:300;color:var(--ink-2)}
+.big{font-size:clamp(1.12rem,2.2vw,1.42rem);line-height:1.5;font-weight:400;color:var(--ink-2)}
 .big b{color:var(--ink);font-weight:600}
 .fade{opacity:0;transform:translateY(24px);transition:opacity 700ms var(--ease),transform 700ms var(--ease)}
 .in .fade{opacity:1;transform:none}
@@ -132,19 +139,19 @@ h3{font-family:var(--display);text-transform:uppercase;font-weight:600}
 .fact p{margin:0;color:var(--ink-2)}
 
 .reviews{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:12px;margin-top:38px}
-.review{margin:0;border-radius:24px;padding:clamp(24px,4vw,44px);background:linear-gradient(180deg,rgba(255,226,122,.1),rgba(255,226,122,.02));box-shadow:inset 0 0 0 1px rgba(255,226,122,.28)}
-.review blockquote{margin:0;font-size:clamp(1.12rem,2.1vw,1.38rem);line-height:1.5;font-weight:300}
+.review{margin:0;border-radius:24px;padding:clamp(22px,4vw,44px);background:linear-gradient(180deg,#221F14,#16150F);box-shadow:inset 0 0 0 1px rgba(255,226,122,.28)}
+.review blockquote{margin:0;font-size:clamp(1.08rem,2.1vw,1.32rem);line-height:1.55;font-weight:400}
 .review blockquote b{font-weight:600}
 .review figcaption{margin-top:18px;font-size:.9rem;color:var(--ink-2)}
 
 .format{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px;margin-top:38px}
 .card2{border-radius:24px;padding:30px;box-shadow:inset 0 0 0 1px var(--line);background:var(--bg-2)}
 .card2.lead{background:var(--accent);color:#0A0B0D;box-shadow:none}
-.card2 .tag{font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;opacity:.7}
+.card2 .tag{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;opacity:.8}
 .card2 h3{font-size:1.6rem;margin:12px 0 14px;line-height:1.05}
 .card2 ul{margin:0;padding-left:1.1em}
 .card2 li{margin:.35em 0}
-.card2 .note{margin:18px 0 0;font-size:.92rem;opacity:.72}
+.card2 .note{margin:18px 0 0;font-size:.95rem;opacity:.85}
 
 .final{text-align:center;overflow:hidden}
 .final .glow2{position:absolute;left:50%;bottom:-45%;width:110%;height:85%;transform:translateX(-50%);background:radial-gradient(50% 50% at 50% 100%,rgba(255,226,122,.18),transparent 70%);pointer-events:none}
@@ -156,15 +163,15 @@ footer{padding-block:30px 46px;border-top:1px solid var(--line);font-size:.85rem
 footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between}
 
 /* бумажки, которые прилетают в каждом разделе */
-.sheet{position:absolute;width:clamp(74px,8vw,116px);aspect-ratio:3/4;border-radius:3px;background:linear-gradient(160deg,#EFECE5,#D9D5CB);box-shadow:0 26px 40px -26px rgba(0,0,0,.9);opacity:0;pointer-events:none;z-index:0;
+.sheet{position:absolute;width:clamp(74px,7vw,104px);aspect-ratio:3/4;border-radius:3px;background:linear-gradient(160deg,#EFECE5,#D9D5CB);box-shadow:0 26px 40px -26px rgba(0,0,0,.9);opacity:0;pointer-events:none;z-index:0;
   transform:translate3d(var(--fx,-40vw),var(--fy,20vh),0) rotate(var(--fr,-30deg)) scale(.8);
   transition:transform 1400ms var(--ease),opacity 900ms ease;transition-delay:var(--sd,0ms)}
 .sheet::before{content:"";position:absolute;inset:12% 14%;background:repeating-linear-gradient(180deg,rgba(20,21,23,.16) 0 3px,transparent 3px 13px)}
-.in .sheet{opacity:.85;transform:translate3d(0,0,0) rotate(var(--rr,-7deg)) scale(1)}
+.in .sheet{opacity:.9;transform:translate3d(0,0,0) rotate(var(--rr,-7deg)) scale(1)}
 section.watch{overflow:hidden}
 section .wrap{position:relative;z-index:1}
+@media(max-width:1180px){.sheet{display:none}}
 @media(max-width:760px){
-  .sheet{display:none}
   .flow{height:215vh}
   .col{min-height:34vh;padding:8px}
   .card{font-size:.74rem;padding:9px 9px 11px;border-radius:5px}
@@ -173,6 +180,16 @@ section .wrap{position:relative;z-index:1}
   .ch{font-size:.58rem;gap:6px}
   .steps li{grid-template-columns:2.6rem 1fr}
   .steps::before,.steps::after{left:.22rem}
+  body{font-size:1.0625rem}
+  .watch .wrap{border-radius:22px;margin-inline:10px;padding-inline:20px}
+  .brand span{display:none}
+  .row .btn{flex:1 1 100%;justify-content:center}
+  .final .row .btn{flex:1 1 100%}
+  .stage h2{font-size:1.9rem}
+  .fact .num{font-size:1.7rem}
+  .card2{padding:24px 22px}
+  .voice{padding:20px 18px}
+  .nav .btn-s{min-height:40px}
 }
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
@@ -189,7 +206,7 @@ section .wrap{position:relative;z-index:1}
 <header class="nav">
   <div class="wrap">
     <a class="brand" href="#top">Тимур Исхаков <span>· порядок в голове</span></a>
-    <a class="btn btn-p btn-s" href="https://ig.me/m/timuriskhakovv" target="_blank" rel="noopener">Разбор</a>
+    <a class="btn btn-p btn-s" href="https://t.me/TimurIskhakovv" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.9 4.3 18.7 19.4c-.2 1-.9 1.3-1.7.8l-4.8-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.3-4.9 8.9-8c.4-.3-.1-.5-.6-.2L6.5 13.2 1.8 11.7c-1-.3-1-1 .2-1.5L20.5 3.1c.9-.3 1.6.2 1.4 1.2z"/></svg>Записаться</a>
   </div>
 </header>
 
@@ -202,8 +219,8 @@ section .wrap{position:relative;z-index:1}
       <h1><span class="ln"><i>Голова</i></span><span class="ln"><i class="out">не помойка.</i></span></h1>
       <p class="sub">Сорок дел в голове весят больше, чем сорок дел на доске. <b>Разгружаю за один вечер</b> — дальше вы управляете днём, а не он вами.</p>
       <div class="row">
-        <a class="btn btn-p" href="https://ig.me/m/timuriskhakovv" target="_blank" rel="noopener">Разбор бесплатно</a>
-        <a class="btn btn-g" href="#how">Смотреть метод</a>
+        <a class="btn btn-p" href="https://t.me/TimurIskhakovv" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.9 4.3 18.7 19.4c-.2 1-.9 1.3-1.7.8l-4.8-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.3-4.9 8.9-8c.4-.3-.1-.5-.6-.2L6.5 13.2 1.8 11.7c-1-.3-1-1 .2-1.5L20.5 3.1c.9-.3 1.6.2 1.4 1.2z"/></svg>Записаться в Telegram</a>
+        <a class="btn btn-g" href="https://ig.me/m/timuriskhakovv" target="_blank" rel="noopener">Написать в Instagram</a>
       </div>
     </div>
     <div class="marquee" aria-hidden="true">
@@ -238,20 +255,20 @@ section .wrap{position:relative;z-index:1}
   </div>
 
   <section class="rule watch">
+    <div class="sheet" style="right:4%;top:14%;--fx:46vw;--fy:-16vh;--fr:28deg;--rr:6deg;--sd:120ms" aria-hidden="true"></div>
+    <div class="sheet" style="right:16%;bottom:10%;--fx:40vw;--fy:24vh;--fr:-34deg;--rr:-9deg;--sd:300ms" aria-hidden="true"></div>
     <div class="wrap narrow">
       <h2 data-split>Не коуч. Обычный мужик, который тонул в делах и долгах.</h2>
-      <div class="sheet" style="right:4%;top:14%;--fx:46vw;--fy:-16vh;--fr:28deg;--rr:6deg;--sd:120ms" aria-hidden="true"></div>
-      <div class="sheet" style="right:16%;bottom:10%;--fx:40vw;--fy:24vh;--fr:-34deg;--rr:-9deg;--sd:300ms" aria-hidden="true"></div>
       <p class="big fade d1">Я работаю в продажах и параллельно строю своё дело. Какое-то время жил одним днём: долг не закрывался, дела висели месяцами, и я не понимал, чего хочу от жизни.</p>
       <p class="big fade d2">Выбрался не мотивацией, а <b>доской и цифрами</b>. Теперь помогаю тем, кто сейчас там, где был я. Иду рядом, на полшага впереди.</p>
     </div>
   </section>
 
   <section class="rule watch">
+    <div class="sheet" style="left:2%;top:18%;--fx:-44vw;--fy:-14vh;--fr:-26deg;--rr:-8deg;--sd:100ms" aria-hidden="true"></div>
     <div class="wrap">
       <div class="narrow">
         <h2 data-split>Узнаёте себя?</h2>
-      <div class="sheet" style="left:2%;top:18%;--fx:-44vw;--fy:-14vh;--fr:-26deg;--rr:-8deg;--sd:100ms" aria-hidden="true"></div>
         <p class="big fade d1">Так говорят люди, которые приходят на разбор. Слово в слово.</p>
       </div>
       <div class="voices">
@@ -264,9 +281,9 @@ section .wrap{position:relative;z-index:1}
   </section>
 
   <section class="rule watch" id="how">
+    <div class="sheet" style="right:3%;top:22%;--fx:44vw;--fy:18vh;--fr:30deg;--rr:7deg;--sd:160ms" aria-hidden="true"></div>
     <div class="wrap narrow">
       <h2 data-split>Как навожу порядок</h2>
-      <div class="sheet" style="right:3%;top:22%;--fx:44vw;--fy:18vh;--fr:30deg;--rr:7deg;--sd:160ms" aria-hidden="true"></div>
       <p class="big fade d1">Пять шагов. Каждый делаю руками, на ваших делах, а не на примерах из книжки.</p>
       <ol class="steps" id="steps">
         <li><h3>Выгрузка из головы</h3><p>Каждое дело, мысль и обещание — на отдельную карточку. Голова освобождается уже на этом шаге.</p></li>
@@ -280,9 +297,9 @@ section .wrap{position:relative;z-index:1}
   </section>
 
   <section class="rule watch">
+    <div class="sheet" style="left:3%;bottom:12%;--fx:-42vw;--fy:20vh;--fr:-30deg;--rr:-6deg;--sd:140ms" aria-hidden="true"></div>
     <div class="wrap">
-      <div class="narrow"><h2 data-split>Работает на обычных делах</h2>
-      <div class="sheet" style="left:3%;bottom:12%;--fx:-42vw;--fy:20vh;--fr:-30deg;--rr:-6deg;--sd:140ms" aria-hidden="true"></div></div>
+      <div class="narrow"><h2 data-split>Работает на обычных делах</h2></div>
       <div class="facts">
         <div class="fact fade d1"><div class="from">Мой отчёт по продажам</div><div class="num">4 месяца → 1 вечер</div><p>Висел с весны. Три вопроса к задаче: нужна ли она, можно ли поручить, если нет — сделать. Сделал за вечер.</p></div>
         <div class="fact fade d2"><div class="from">Моё дело «загранпаспорт»</div><div class="num">Переносил день за днём</div><p>Разбил на мелкие шаги: съездить, узнать, собрать документы. Паспорт на руках.</p></div>
@@ -301,9 +318,9 @@ section .wrap{position:relative;z-index:1}
   </section>
 
   <section class="rule watch">
+    <div class="sheet" style="right:2%;bottom:14%;--fx:42vw;--fy:22vh;--fr:26deg;--rr:8deg;--sd:120ms" aria-hidden="true"></div>
     <div class="wrap">
-      <div class="narrow"><h2 data-split>Как проходит работа</h2>
-      <div class="sheet" style="right:2%;bottom:14%;--fx:42vw;--fy:22vh;--fr:26deg;--rr:8deg;--sd:120ms" aria-hidden="true"></div></div>
+      <div class="narrow"><h2 data-split>Как проходит работа</h2></div>
       <div class="format">
         <div class="card2 lead fade d1">
           <div class="tag">Начало · бесплатно</div>
@@ -322,16 +339,19 @@ section .wrap{position:relative;z-index:1}
   </section>
 
   <section class="rule final watch">
+    <div class="sheet" style="left:6%;top:20%;--fx:-40vw;--fy:-18vh;--fr:-24deg;--rr:-10deg;--sd:100ms" aria-hidden="true"></div>
+    <div class="sheet" style="right:6%;top:26%;--fx:40vw;--fy:-20vh;--fr:24deg;--rr:9deg;--sd:260ms" aria-hidden="true"></div>
     <div class="glow2" aria-hidden="true"></div>
     <div class="wrap">
       <h2 data-split>Напишите «разбор».</h2>
-      <div class="sheet" style="left:6%;top:20%;--fx:-40vw;--fy:-18vh;--fr:-24deg;--rr:-10deg;--sd:100ms" aria-hidden="true"></div>
-      <div class="sheet" style="right:6%;top:26%;--fx:40vw;--fy:-20vh;--fr:24deg;--rr:9deg;--sd:260ms" aria-hidden="true"></div>
-      <p class="big fade d1">В директ Инстаграма. Отвечу сам и договоримся о времени.</p>
+      <p class="big fade d1">В Telegram или в директ Инстаграма. Отвечу сам, и договоримся о времени.</p>
       <div class="row fade d2">
-        <a class="btn btn-p" id="magnet" href="https://ig.me/m/timuriskhakovv" target="_blank" rel="noopener">
+        <a class="btn btn-p" id="magnet" href="https://t.me/TimurIskhakovv" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.9 4.3 18.7 19.4c-.2 1-.9 1.3-1.7.8l-4.8-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.3-4.9 8.9-8c.4-.3-.1-.5-.6-.2L6.5 13.2 1.8 11.7c-1-.3-1-1 .2-1.5L20.5 3.1c.9-.3 1.6.2 1.4 1.2z"/></svg>
+          Записаться в Telegram
+        </a>
+        <a class="btn btn-g" href="https://ig.me/m/timuriskhakovv" target="_blank" rel="noopener">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".6" fill="currentColor"/></svg>
-          Написать в директ
+          Директ Instagram
         </a>
       </div>
     </div>
@@ -341,7 +361,7 @@ section .wrap{position:relative;z-index:1}
 <footer>
   <div class="wrap">
     <span>Тимур Исхаков · Казань</span>
-    <a href="https://www.instagram.com/timuriskhakovv/" target="_blank" rel="noopener">@timuriskhakovv</a>
+    <span><a href="https://t.me/TimurIskhakovv" target="_blank" rel="noopener">Telegram @TimurIskhakovv</a> · <a href="https://www.instagram.com/timuriskhakovv/" target="_blank" rel="noopener">Instagram @timuriskhakovv</a></span>
   </div>
 </footer>
 
@@ -414,19 +434,19 @@ function cardTexture(card, maxAniso){
   g.fillStyle = sh; g.fillRect(0,0,W,H);
 
   g.fillStyle = card.done ? 'rgba(28,32,46,.55)' : '#1C2038';
-  g.font = '600 78px Caveat, "Comic Sans MS", cursive';
+  g.font = '600 112px Caveat, "Comic Sans MS", cursive';
   g.textBaseline = 'top';
   const words = card.text.split(' ');
   let line = '', y = 180, lastW = 0, lines = [];
   for(const w of words){
     const t = line ? line + ' ' + w : w;
-    if(g.measureText(t).width > W - 220){ lines.push(line); line = w; } else line = t;
+    if(g.measureText(t).width > W - 190){ lines.push(line); line = w; } else line = t;
   }
   lines.push(line);
-  y = 260 - lines.length*46;
+  y = Math.max(215, 430 - lines.length*62);
   lines.forEach((ln,k) => {
     g.save();
-    g.translate(130, y + k*92);
+    g.translate(110, y + k*118);
     g.rotate((Math.random()-.5) * 0.012);     /* строки чуть косые, как от руки */
     g.fillText(ln, 0, 0);
     lastW = g.measureText(ln).width;
@@ -435,13 +455,13 @@ function cardTexture(card, maxAniso){
   if(card.done){
     g.strokeStyle = 'rgba(28,32,46,.5)'; g.lineWidth = 6;
     g.beginPath();
-    g.moveTo(130, y + (lines.length-1)*92 + 58);
-    g.lineTo(130 + lastW, y + (lines.length-1)*92 + 50);
+    g.moveTo(110, y + (lines.length-1)*118 + 74);
+    g.lineTo(110 + lastW, y + (lines.length-1)*118 + 66);
     g.stroke();
   }
-  g.fillStyle = 'rgba(28,32,46,.45)';
-  g.font = '500 44px Caveat, cursive';
-  g.fillText(card.tag, 130, H - 210);
+  g.fillStyle = 'rgba(28,32,46,.62)';
+  g.font = '600 62px Caveat, cursive';
+  g.fillText(card.tag, 110, H - 140);
 
   const tex = new THREE.CanvasTexture(c);
   tex.anisotropy = maxAniso || 8;
@@ -474,12 +494,15 @@ function buildScene(){
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.4;
+  const loader = new THREE.TextureLoader();
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
   camera.position.set(0, 0.1, 17.6);
 
-  scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+  scene.add(new THREE.AmbientLight(0xffffff, 0.75));
   const key = new THREE.DirectionalLight(0xfff3d0, 1.5);
   key.position.set(-5, 9, 7);
   key.castShadow = true;
@@ -517,6 +540,16 @@ function buildScene(){
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
   })();
   const deskMat = new THREE.MeshStandardMaterial({map:corkTex, roughness:1, metalness:0});
+  /* настоящая пробка с фото его доски: и цвет, и рельеф крошки */
+  loader.load('cork.jpg', tex => {
+    tex.wrapS = tex.wrapT = THREE.MirroredRepeatWrapping;
+    tex.repeat.set(2.4, 1.75);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    const bump = tex.clone(); bump.colorSpace = THREE.NoColorSpace; bump.needsUpdate = true;
+    deskMat.map = tex; deskMat.bumpMap = bump; deskMat.bumpScale = 1.4;
+    deskMat.needsUpdate = true;
+  }, undefined, () => console.warn('cork.jpg не загрузился — остаётся рисованная пробка'));
   const desk = new THREE.Mesh(new THREE.BoxGeometry(10.2, 7.4, .3), deskMat);
   desk.position.z = -.16; desk.receiveShadow = true;
   board.add(desk);
@@ -536,11 +569,20 @@ function buildScene(){
     }
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
   })();
-  const woodMat = new THREE.MeshStandardMaterial({map:woodTex, roughness:.75, metalness:.02});
+  const woodMat = new THREE.MeshStandardMaterial({map:woodTex, roughness:.6, metalness:.02});
+  const woodMatV = new THREE.MeshStandardMaterial({map:woodTex, roughness:.6, metalness:.02});
+  /* рама с фото: для вертикальных планок волокна разворачиваем вдоль */
+  loader.load('wood.jpg', tex => {
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    const v = tex.clone(); v.center.set(.5,.5); v.rotation = Math.PI/2; v.needsUpdate = true;
+    woodMat.map = tex; woodMatV.map = v;
+    woodMat.needsUpdate = woodMatV.needsUpdate = true;
+  }, undefined, () => console.warn('wood.jpg не загрузился — остаётся рисованная рама'));
   const FW = 10.2, FH = 7.4, FT = .44;
   [[0, FH/2 + FT/2, FW + FT*2, FT], [0, -FH/2 - FT/2, FW + FT*2, FT],
    [-FW/2 - FT/2, 0, FT, FH], [FW/2 + FT/2, 0, FT, FH]].forEach(([x,y,w,h]) => {
-    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, .44), woodMat);
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, .44), w > h ? woodMat : woodMatV);
     m.position.set(x, y, .04); m.castShadow = true; m.receiveShadow = true; board.add(m);
   });
 
@@ -642,7 +684,9 @@ function buildScene(){
     if(!w || !h) return;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
-    camera.fov = w < 700 ? 46 : 32;
+    /* доска целиком влезает по ширине и на узком телефоне */
+    const needV = 2 * Math.atan(5.55 / 17.6 / camera.aspect) * 180 / Math.PI;
+    camera.fov = Math.min(78, Math.max(32, needV));
     camera.updateProjectionMatrix();
   }
   resize();
@@ -748,7 +792,7 @@ function buildScene(){
     const go = () => { try { buildScene(); } catch(e){ console.error('3D-сцена не собралась:', e); canvas.style.display = 'none'; } };
     const f = document.fonts;
     if(f && f.load) Promise.race([
-      Promise.all([f.load('600 78px Caveat'), f.load('700 110px Caveat')]),
+      Promise.all([f.load('600 112px Caveat','Нужно сделать абв'), f.load('700 110px Caveat','Нужно сделать абв'), f.load('600 62px Caveat','бизнес семья')]),
       new Promise(r => setTimeout(r, 2500))
     ]).then(go, go);
     else go();
