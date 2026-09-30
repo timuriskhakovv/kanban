@@ -1192,7 +1192,7 @@ body {
       (lastPull ? '. Последний раз в <b>' + время(lastPull) + '</b>' : '') + '.', true);
   }
 
-  function pull(silent) {
+  function pull(silent, слить) {
     if (!sheetUrl) { if (!silent) toast('Сначала подключи таблицу.'); return; }
     if (!silent) showSync('Загружаю…', false);
 
@@ -1226,8 +1226,21 @@ body {
           if (чистоеВремя(e.up)) rec.up = чистоеВремя(e.up);
           if (rec.sleep || rec.day || rec.note || rec.bed || rec.up) { свежее[d] = rec; got++; }
         }
+        // При подключении таблицы не теряем то, что натыкано руками на этой странице:
+        // чего нет в таблице — берём отсюда и отправляем туда.
+        var дослать = [];
+        if (слить) {
+          for (var dd in state) {
+            var мест = state[dd], там = свежее[dd] || {}, добавили = false;
+            ['sleep', 'day', 'note', 'bed', 'up'].forEach(function (f) {
+              if (мест[f] && !там[f]) { там[f] = мест[f]; добавили = true; }
+            });
+            if (добавили) { свежее[dd] = там; дослать.push(+dd); }
+          }
+        }
         state = свежее;
         save();
+        дослать.forEach(function (d) { push(d, false); });
         var opened = daysEl.querySelector('.day.open');
         var openId = opened ? opened.getAttribute('data-d') : null;
         buildDays();
@@ -1238,7 +1251,7 @@ body {
         refreshStats();
         lastPull = Date.now();
         paintSync();
-        if (!silent) toast('Загружено дней: ' + got + '.');
+        if (!silent) toast('Загружено дней: ' + got + (дослать.length ? '. Отправил в таблицу с этой страницы: ' + дослать.length : '') + '.');
       })
       .catch(function (err) {
         showSync('Не получилось загрузить: ' + err.message, false);
@@ -1324,7 +1337,7 @@ body {
     }
     sheetUrl = v;
     try { localStorage.setItem(URLKEY, v); } catch (e) {}
-    pull(false);
+    pull(false, true);
   });
 
   document.getElementById('btnPull').addEventListener('click', function () { pull(false); });
