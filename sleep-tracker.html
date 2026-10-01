@@ -61,6 +61,17 @@ body {
   letter-spacing: 0.1px;
 }
 
+/* ── Переключатель месяцев ── */
+.months { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+.mname { flex: 1; text-align: center; font-size: 17px; font-weight: 600; letter-spacing: -0.2px; }
+.mbtn {
+  width: 44px; height: 44px; border-radius: 12px; border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06); color: var(--text); font-size: 24px; line-height: 1;
+  font-family: inherit; cursor: pointer; transition: transform 140ms ease-out, background-color 180ms ease;
+}
+.mbtn:active { transform: scale(0.96); }
+.mbtn:disabled { opacity: .28; cursor: default; }
+
 /* ── Сводка ── */
 .summary {
   display: grid;
@@ -494,7 +505,12 @@ body {
 
 <div class="header">
   <h1>Сон и день</h1>
-  <div class="sub" id="sub">Сентябрь 2026</div>
+  <div class="months">
+    <button type="button" class="mbtn" id="mPrev" aria-label="Предыдущий месяц">‹</button>
+    <div class="mname" id="mName">Сентябрь 2026</div>
+    <button type="button" class="mbtn" id="mNext" aria-label="Следующий месяц">›</button>
+  </div>
+  <div class="sub" id="sub"></div>
 </div>
 
 <div class="summary">
@@ -535,7 +551,7 @@ body {
   <div class="link-note" id="linkNote">Заполни хотя бы неделю — тогда станет видно, есть ли связь.</div>
 </div>
 
-<div class="days-title">СЕНТЯБРЬ</div>
+<div class="days-title" id="daysTitle"></div>
 <div id="days"></div>
 
 <div class="tools">
@@ -565,8 +581,38 @@ body {
 (function () {
   'use strict';
 
-  var YEAR = 2026, MONTH = 9, DAYS = 30;
-  var KEY = 'sleepday-2026-09';
+  /* Месяц берём из адреса (?m=2026-10), иначе — текущий.
+     Раньше сентября 2026 данных нет, дальше текущего месяца листать незачем. */
+  var МЕСЯЦЫ = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  var сейчас = new Date();
+  var ПЕРВЫЙ = 2026 * 12 + 8;                                   // сентябрь 2026
+  var ТЕКУЩИЙ = сейчас.getFullYear() * 12 + сейчас.getMonth();
+  var выбран = ТЕКУЩИЙ;
+  var mm = /[?&]m=(\d{4})-(\d{2})/.exec(location.search);
+  if (mm) {
+    var n = Number(mm[1]) * 12 + Number(mm[2]) - 1;
+    if (n >= ПЕРВЫЙ && n <= ТЕКУЩИЙ) выбран = n;
+  }
+  if (выбран < ПЕРВЫЙ) выбран = ПЕРВЫЙ;
+  var YEAR = Math.floor(выбран / 12), MONTH = выбран % 12 + 1;
+  var DAYS = new Date(YEAR, MONTH, 0).getDate();
+  var MM = String(MONTH).padStart(2, '0');
+  var KEY = 'sleepday-' + YEAR + '-' + MM;
+  var НАЗВАНИЕ = МЕСЯЦЫ[MONTH - 1] + ' ' + YEAR;
+
+  function кМесяцу(n) {
+    var y = Math.floor(n / 12), m = String(n % 12 + 1).padStart(2, '0');
+    location.search = '?m=' + y + '-' + m;
+  }
+  (function () {
+    document.getElementById('mName').textContent = НАЗВАНИЕ;
+    document.getElementById('daysTitle').textContent = МЕСЯЦЫ[MONTH - 1].toUpperCase();
+    var prev = document.getElementById('mPrev'), next = document.getElementById('mNext');
+    prev.disabled = выбран <= ПЕРВЫЙ;
+    next.disabled = выбран >= ТЕКУЩИЙ;
+    prev.addEventListener('click', function () { if (выбран > ПЕРВЫЙ) кМесяцу(выбран - 1); });
+    next.addEventListener('click', function () { if (выбран < ТЕКУЩИЙ) кМесяцу(выбран + 1); });
+  })();
   var WD = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
 
   var state = load();
@@ -1350,7 +1396,7 @@ body {
 
   var sub = document.getElementById('sub');
   if (TODAY) {
-    sub.textContent = 'Сентябрь 2026 · сегодня ' + TODAY + '-е';
+    sub.textContent = 'Сегодня ' + TODAY + '-е';
     var t = daysEl.querySelector('[data-d="' + TODAY + '"]');
     if (t) setTimeout(function () {
       t.scrollIntoView({ block: 'center', behavior: 'auto' });
